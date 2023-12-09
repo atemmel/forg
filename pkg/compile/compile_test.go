@@ -78,7 +78,7 @@ void %s() {
 func setup(t *testing.T) *Target {
 	dir := t.TempDir()
 
-	const n = 32
+	const n = 64
 
 	target := &Target{
 		Units: make([]Unit, n),
@@ -105,6 +105,23 @@ func TestCompile(t *testing.T) {
 
 	err := Compile(target)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("Error on compilation:", err)
+	}
+}
+
+func TestCompileWithError(t *testing.T) {
+	target := setup(t)
+
+	l := len(target.Units)
+	half := l / 2
+
+	target.Units = append(target.Units[:half + 1], target.Units[half:]...)
+	target.Units[half] = Unit{
+		Path: "xyz.cpp",
+	}
+
+	err := Compile(target)
+	if err == nil {
+		t.Fatal("Compilation suceeded unexpectedly")
 	}
 }

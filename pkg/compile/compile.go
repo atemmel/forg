@@ -32,19 +32,14 @@ func Compile(t *Target) error {
 	nUnits := len(t.Units)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	results := make(chan error, nUnits)
-	units := make(chan Unit, nUnits)
-
-	//TODO: cancel on failed build
-	_ = cancel
 
 	compileCtx := compileCtx{
 		ctx: ctx,
-		results: results,
+		results: make(chan error, nUnits),
 		step: 0,
 		stepMutex: sync.Mutex{},
 		target: t,
-		units: units,
+		units: make(chan Unit, nUnits),
 	}
 
 	// create worker pool
@@ -56,13 +51,23 @@ func Compile(t *Target) error {
 	// queue data for pool
 	go queueWork(&compileCtx)
 
+	var err error
+
 	// wait for workerpool to be done
 	for i := 0; i < nUnits; i++ {
-		err := <- compileCtx.results
+		err = <- compileCtx.results
 		if err != nil {
-			panic(err)
+			errf("Error occured, waiting for unfinished jobs...\n")
+			cancel()
+			break
 		}
 	}
+	cancel()
+
+	if err != nil {
+		return err
+	}
+
 	errf("[100%%]\n")
 	return nil
 }
@@ -74,28 +79,36 @@ func queueWork(compileCtx *compileCtx) {
 	close(compileCtx.units)
 }
 
-func startWorker(ctx *compileCtx) {
-	for unit := range ctx.units {
-		logCompilation(ctx, unit)
-		ctx.results <- compileUnit(unit)
+func startWorker(compileCtx *compileCtx) {
+	for unit := range compileCtx.units {
+		if compileCtx.ctx.Err() != nil {
+			compileCtx.results <- nil
+		} else {
+			logCompilation(compileCtx, unit)
+			compileCtx.results <- compileUnit(compileCtx, unit)
+		}
 	}
 }
 
-func logCompilation(ctx *compileCtx, unit Unit) {
-	ctx.stepMutex.Lock()
-	defer ctx.stepMutex.Unlock()
+func logCompilation(compileCtx *compileCtx, unit Unit) {
+	compileCtx.stepMutex.Lock()
+	defer compileCtx.stepMutex.Unlock()
+	if compileCtx.ctx.Err() != nil {
+		return
+	}
 
-	nUnits := len(ctx.target.Units)
-	step := ctx.step
+	nUnits := len(compileCtx.target.Units)
+	step := compileCtx.step
 
 	filename := path.Base(unit.Path)
 	progress := int(math.Round(float64(step) / float64(nUnits) * 100))
+	//TODO: prefix with \033[2K\r
 	errf("[%3d%%] %s\n", progress, filename)
-	ctx.step++
+	compileCtx.step++
 }
 
-func compileUnit(unit Unit) error {
-	cmd := exec.Command("g++", "-c", unit.Path)
+func compileUnit(compileCtx *compileCtx, unit Unit) error {
+	cmd := exec.CommandContext(compileCtx.ctx, "g++", "-c", unit.Path)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
