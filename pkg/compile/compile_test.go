@@ -78,7 +78,7 @@ void %s() {
 func setup(t *testing.T) *Target {
 	dir := t.TempDir()
 
-	const n = 16
+	const n = 32
 
 	target := &Target{
 		Units: make([]Unit, n),
