@@ -20,12 +20,12 @@ type Target struct {
 }
 
 type compileCtx struct {
-	ctx context.Context
-	results chan error
-	step int
+	ctx       context.Context
+	results   chan error
+	step      int
 	stepMutex sync.Mutex
-	target *Target
-	units chan Unit
+	target    *Target
+	units     chan Unit
 }
 
 func Compile(t *Target) error {
@@ -34,12 +34,12 @@ func Compile(t *Target) error {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	compileCtx := compileCtx{
-		ctx: ctx,
-		results: make(chan error, nUnits),
-		step: 0,
+		ctx:       ctx,
+		results:   make(chan error, nUnits),
+		step:      0,
 		stepMutex: sync.Mutex{},
-		target: t,
-		units: make(chan Unit, nUnits),
+		target:    t,
+		units:     make(chan Unit, nUnits),
 	}
 
 	// create worker pool
@@ -55,7 +55,7 @@ func Compile(t *Target) error {
 
 	// wait for workerpool to be done
 	for i := 0; i < nUnits; i++ {
-		err = <- compileCtx.results
+		err = <-compileCtx.results
 		if err != nil {
 			errf("Error occured, waiting for unfinished jobs...\n")
 			cancel()
