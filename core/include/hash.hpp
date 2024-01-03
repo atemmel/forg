@@ -3,7 +3,7 @@
 #include "type_traits.hpp"
 
 namespace cor {
-	constexpr size_t FVN_OFFSET_BASIS = 14695981039346656037;
+	constexpr size_t FNN_OFFSET_BASIS = 14695981039346656037;
 	constexpr size_t FNV_prime = 1099511628211;
 
 	size_t hash_FNV_1a(const unsigned char* first, size_t count) {

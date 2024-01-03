@@ -38,7 +38,7 @@ namespace cor {
 	}
 
 	template<class T>
-	T search(cor::Slice<T> slice, int value) 
+	T& search(cor::Slice<T> slice, T value) 
 	{
 		for (auto It = slice.begin(); It != slice.end(); It++)
 		{

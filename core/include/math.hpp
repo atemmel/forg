@@ -13,11 +13,6 @@ namespace cor {
 		return a < b ? b : a;
 	}
 
-	template<class T>
-	const T& Max(const T& a, const T& b) {
-		return a < b ? b : a;
-	}
-
 	template <typename T>
 	constexpr T abs(T value) {
 		return (value < 0) ? -value : value;
