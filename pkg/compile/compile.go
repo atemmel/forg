@@ -2,7 +2,7 @@ package compile
 
 import (
 	"context"
-	"fmt"
+	"forg/pkg/log"
 	"math"
 	"os"
 	"os/exec"
@@ -57,7 +57,7 @@ func Compile(t *Target) error {
 	for i := 0; i < nUnits; i++ {
 		err = <-compileCtx.results
 		if err != nil {
-			errf("Error occured, waiting for unfinished jobs...\n")
+			log.Error("Error occured, waiting for unfinished jobs...\n")
 			cancel()
 			break
 		}
@@ -68,7 +68,7 @@ func Compile(t *Target) error {
 		return err
 	}
 
-	errf("[100%%]\n")
+	log.Error("[100%%]\n")
 	return nil
 }
 
@@ -103,7 +103,7 @@ func logCompilation(compileCtx *compileCtx, unit Unit) {
 	filename := path.Base(unit.Path)
 	progress := int(math.Round(float64(step) / float64(nUnits) * 100))
 	//TODO: prefix with \033[2K\r
-	errf("[%3d%%] %s\n", progress, filename)
+	log.Error("[%3d%%] %s\n", progress, filename)
 	compileCtx.step++
 }
 
@@ -112,8 +112,4 @@ func compileUnit(compileCtx *compileCtx, unit Unit) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
-}
-
-func errf(str string, args ...any) {
-	fmt.Fprintf(os.Stderr, str, args...)
 }
