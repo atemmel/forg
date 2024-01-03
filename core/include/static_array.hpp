@@ -14,6 +14,16 @@ class StaticArray {
         return I;
     }
 
+    constexpr auto operator[](usize i) const -> const T& {
+        assert(i < size());
+        return carray[i];
+    }
+
+    constexpr auto operator[](usize i) -> T& {
+        assert(i < size());
+        return carray[i];
+    }
+
     constexpr auto begin() -> T* {
         return &carray;
     }
@@ -28,16 +38,6 @@ class StaticArray {
 
     constexpr auto end() const -> T const* {
         return &carray + size();
-    }
-
-    constexpr auto operator[](usize i) const -> const T& {
-        assert(i < size());
-        return carray[i];
-    }
-
-    constexpr auto operator[](usize i) -> T& {
-        assert(i < size());
-        return carray[i];
     }
 
     constexpr auto slice(usize first, usize last) -> Slice<T> {
