@@ -1,6 +1,8 @@
 #ifndef RANGE_HPP
 #define RANGE_HPP
 
+#include "types.hpp"
+
 namespace cor {
 
 template <class T>
@@ -10,17 +12,17 @@ public:
         : first(first), ssize((last - first)) {
     }
 
-    size_t size() const {
+    usize size() const {
         return ssize;
     }
     bool empty() const {
         return first == nullptr;
     }
 
-    T& operator[](size_t index) const {
+    T& operator[](usize index) const {
         return first[index];
     }
-    T& at(size_t index) const {
+    T& at(usize index) const {
         return first[index];
     }
 
@@ -58,32 +60,34 @@ public:
 
 private:
     T* first = nullptr;
-    size_t ssize;
+    usize ssize;
 };
 
 template <class T>
 class View {
 public:
-    constexpr View(const T* s, size_t count) : first(s), last(s + count) {
+    constexpr View(const T* s, usize count) : first(s), last(s + count) {
     }
 
-    constexpr View(const T* s) : first(s), last(s + cor::strlen(s)) {
-    }
+    /* TODO: se över detta
+constexpr View(const T* s) : first(s), last(s + cor::strlen(s)) {
+}
+    */
 
     View(T* first = nullptr, T* last = nullptr) : first(first), last(last) {
     }
 
-    size_t size() const {
+    usize size() const {
         return last - first;
     }
     bool empty() const {
         return first == nullptr;
     }
 
-    const T& operator[](size_t index) const {
+    const T& operator[](usize index) const {
         return first[index];
     }
-    const T& at(size_t index) const {
+    const T& at(usize index) const {
         return first[index];
     }
 

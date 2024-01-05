@@ -1,8 +1,11 @@
 #ifndef MEMORY_HPP
 #define MEMORY_HPP
 
-#include "math.hpp"
+#include <new>
+#include <type_traits>
+
 #include "type_traits.hpp"
+#include "types.hpp"
 #include "utility.hpp"
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
@@ -22,10 +25,10 @@ constexpr auto DEFAULT_ALIGNMENT = 16ull;
 
 namespace cor::mem {
 
-enum class alignVal_T : size_t {};
+enum class alignVal_T : usize {};
 
 template <typename T>
-T* allocateArr(size_t size) {
+T* allocateArr(usize size) {
     return size > 0 ? DBG_NEW T[size]{} : DBG_NEW T[size];
 }
 
@@ -35,7 +38,7 @@ void deallocateArr(T* ptr) {
 }
 
 template <typename T>
-std::remove_extent_t<T>* allocate_r_extent(size_t size) {
+std::remove_extent_t<T>* allocate_r_extent(usize size) {
     typedef std::remove_extent_t<T> Elem;
     Elem* alocatedMem = DBG_NEW Elem[size]();
     return alocatedMem;
@@ -71,29 +74,29 @@ T* allocatePlaceDefault(Place* place) {
     return ::new (place) T();
 }
 
-template <size_t Align, EnableIf_T<(Align > DEFAULT_ALIGNMENT), int> = 0>
-void* allocateRaw(size_t count) {
+template <usize Align, EnableIf_T<(Align > DEFAULT_ALIGNMENT), int> = 0>
+void* allocateRaw(usize count) {
     return operator new(count, std::align_val_t{Align});
 }
 
-template <size_t Align, EnableIf_T<(Align <= DEFAULT_ALIGNMENT), int> = 0>
-void* allocateRaw(size_t count) {
+template <usize Align, EnableIf_T<(Align <= DEFAULT_ALIGNMENT), int> = 0>
+void* allocateRaw(usize count) {
     return operator new(count);
 }
 
-template <size_t Align, EnableIf_T<(Align > DEFAULT_ALIGNMENT), int> = 0>
+template <usize Align, EnableIf_T<(Align > DEFAULT_ALIGNMENT), int> = 0>
 void deallocateRaw(void* ptr) {
     return operator delete(ptr, std::align_val_t{Align});
 }
 
-template <size_t Align, EnableIf_T<(Align <= DEFAULT_ALIGNMENT), int> = 0>
+template <usize Align, EnableIf_T<(Align <= DEFAULT_ALIGNMENT), int> = 0>
 void deallocateRaw(void* ptr) {
     return operator delete(ptr);
 }
 
 template <class T>
-inline constexpr size_t align_of =
-    max_of(alignof(T), static_cast<size_t>(DEFAULT_ALIGNMENT));
+inline constexpr usize align_of =
+    max_of(alignof(T), static_cast<usize>(DEFAULT_ALIGNMENT));
 
 template <class T>
 struct Allocator {
@@ -102,7 +105,6 @@ struct Allocator {
     using const_pointer   = const T*;
     using reference       = T&;
     using const_reference = const T&;
-    using size_type       = size_t;
     using difference_type = std::ptrdiff_t;
 
     Allocator()                                          = default;
@@ -111,7 +113,7 @@ struct Allocator {
     constexpr Allocator(const Allocator<Other>& other) noexcept {
     }
 
-    [[nodiscard]] pointer allocate(size_type n) {
+    [[nodiscard]] pointer allocate(usize n) {
         return static_cast<pointer>(
             allocateRaw<align_of<value_type>>(n * sizeof(T)));
     }
@@ -124,19 +126,19 @@ struct Allocator {
         allocatePlace<T>(p, val);
     }
 
-    void constructN(pointer p, size_type n) {
-        for (size_t i = 0; i < n; i++) {
+    void constructN(pointer p, usize n) {
+        for (usize i = 0; i < n; i++) {
             allocatePlaceDefault<T>(p + i);
         }
     }
 
-    [[nodiscard]] pointer create(size_type n, const_reference val) {
+    [[nodiscard]] pointer create(usize n, const_reference val) {
         auto tmp_ptr = allocate(n);
         construct(tmp_ptr, val);
         return tmp_ptr;
     }
 
-    [[nodiscard]] pointer createN(size_type n) {
+    [[nodiscard]] pointer createN(usize n) {
         auto tmp_ptr = allocate(n);
         constructN(tmp_ptr, n);
         return tmp_ptr;

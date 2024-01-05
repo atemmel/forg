@@ -5,6 +5,11 @@
 
 namespace cor {
 
+template <class T>
+constexpr const T& max_of(const T& a, const T& b) {
+    return a < b ? b : a;
+}
+
 template <typename T>
 constexpr cor::RemoveReference_T<T>&& isMovable(T&& t) noexcept {
     return static_cast<cor::RemoveReference_T<T>&&>(t);

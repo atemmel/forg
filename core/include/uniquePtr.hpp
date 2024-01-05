@@ -37,7 +37,7 @@ public:
             return *this;
         }
     }
-    UniquePtr& operator=(nullptr_t) noexcept {
+    UniquePtr& operator=(NullType) noexcept {
         this->reset();
         return *this;
     }
@@ -126,7 +126,7 @@ public:
             return *this;
         }
     }
-    UniquePtr& operator=(nullptr_t) noexcept {
+    UniquePtr& operator=(NullType) noexcept {
         this->reset();
         return *this;
     }
@@ -178,7 +178,7 @@ public:
         return *get();
     }
 
-    Elem_t& operator[](cor::size_t i) const {
+    Elem_t& operator[](usize i) const {
         return this->get()[i];
     }
 
@@ -204,7 +204,7 @@ constexpr UniquePtr<T> makeUnique(Args&&... args) {
 // array type
 template <class T, cor::EnableIf_T<cor::IsArray_T<T> && std::extent_v<T> == 0,
                                    bool> = true>
-constexpr UniquePtr<T> makeUnique(cor::size_t size) {
+constexpr UniquePtr<T> makeUnique(usize size) {
     return UniquePtr<T>(mem::allocate_r_extent<T>(size));
 }
 
@@ -214,12 +214,12 @@ void swap(UniquePtr<T, D>& lhs, UniquePtr<T, D>& rhs) noexcept {
 }
 
 template <class T, class D>
-bool operator==(const UniquePtr<T, D>& ptr, nullptr_t) noexcept {
+bool operator==(const UniquePtr<T, D>& ptr, NullType) noexcept {
     return !ptr;
 }
 
 template <class T, class D>
-bool operator!=(const UniquePtr<T, D>& ptr, nullptr_t) noexcept {
+bool operator!=(const UniquePtr<T, D>& ptr, NullType) noexcept {
     return (bool)ptr;
 }
 

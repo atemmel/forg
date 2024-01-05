@@ -8,7 +8,6 @@
 template <typename T>
 class HashTable {
 private:
-    template <typename T>
     struct Node {
         Node(T data) : data(data) {
         }
@@ -16,17 +15,16 @@ private:
         int data;
         cor::UniquePtr<Node> next = nullptr;
     };
-    template <typename T>
-    using hashArr = cor::Array<cor::UniquePtr<Node<T>>>;
 
-    hashArr<T> hashTable;
-    size_t ssize = 0;
+    using HashArr = cor::Array<cor::UniquePtr<Node>>;
+
+    HashArr hashTable;
+    usize ssize = 0;
 
     // load factor for separate chaining between 1 and 3;
     const float DEFAULT_LOAD_FACTOR = 2;
 
-    template <typename T>
-    size_t hashFunk(T key) {
+    usize hashFunk(T key) {
         return cor::Hash<T>{}(key) % this->hashTable.size();
     }
 
@@ -34,11 +32,11 @@ public:
     HashTable() : hashTable(0) {
     }
 
-    HashTable(size_t size) : hashTable(size) {
+    HashTable(usize size) : hashTable(size) {
     }
 
     template <typename RandomIt>
-    HashTable(RandomIt first, RandomIt last, size_t size) {
+    HashTable(RandomIt first, RandomIt last, usize size) {
         auto newSize = std::floor(size / 0.5);
         this->hashTable.resize(int(newSize));
         for (auto it = first; it != last; it++) {
@@ -77,9 +75,8 @@ public:
         return *this;
     }
 
-    template <typename T>
-    Node<T>* search(T key) {
-        size_t index = this->hashFunk(key);
+    Node* search(T key) {
+        usize index = this->hashFunk(key);
 
         auto node = this->hashTable.at(index).get();
 
@@ -93,11 +90,10 @@ public:
         return nullptr;
     }
 
-    template <typename T>
     void insert(T key) {
-        auto newNode = cor::makeUnique<Node<T>>(key);
+        auto newNode = cor::makeUnique<Node>(key);
 
-        size_t index = this->hashFunk(key);
+        usize index = this->hashFunk(key);
 
         if (this->hashTable[index] == nullptr) {
             this->hashTable[index] = cor::isMovable(newNode);
@@ -119,7 +115,7 @@ public:
     template <typename T>
     void remove(T key) {
         if (search(key)) {
-            size_t index = this->hashFunk(key);
+            usize index = this->hashFunk(key);
 
             if (this->hashTable.at(index).get()->data == key) {
                 this->hashTable.at(index) =
@@ -137,7 +133,7 @@ public:
         }
     }
 
-    void resizeAndRehash(size_t newSize) {
+    void resizeAndRehash(usize newSize) {
         HashTable<T> newTable(newSize);
 
         for (auto& e : hashTable) {
@@ -152,11 +148,11 @@ public:
         this->swap(newTable);
     }
 
-    size_t size() const {
+    usize size() const {
         return ssize;
     }
 
-    hashArr<T>& data() {
+    HashArr& data() {
         return hashTable;
     }
 

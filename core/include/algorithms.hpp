@@ -43,7 +43,7 @@ T& search(cor::Slice<T> slice, T value) {
     return *slice.end();
 }
 
-size_t strlen(const char* str);
+usize strlen(const char* str);
 
 int strcmp(const char* lhs, const char* rhs);
 

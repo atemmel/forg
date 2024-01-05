@@ -6,13 +6,9 @@
 #include <vector>
 
 #include "array.hpp"
+#include "types.hpp"
 
 namespace cor {
-
-template <class T>
-constexpr const T& max_of(const T& a, const T& b) {
-    return a < b ? b : a;
-}
 
 template <typename T>
 constexpr T abs(T value) {
@@ -21,18 +17,18 @@ constexpr T abs(T value) {
 
 constexpr int sign(long long num);
 
-size_t pow(size_t base, size_t exponent);
+usize pow(usize base, usize exponent);
 
-std::map<size_t, size_t> primefactorization(size_t n);
+std::map<usize, usize> primefactorization(usize n);
 
-size_t phiFunk(size_t n);
+usize phiFunk(usize n);
 
 template <class T, class... Args>
-size_t lcm(const T num1, const T num2, Args... nums) {
-    std::vector<std::map<size_t, size_t>> primeFactorVec = {
+usize lcm(const T num1, const T num2, Args... nums) {
+    std::vector<std::map<usize, usize>> primeFactorVec = {
         primefactorization(num2), primefactorization(nums)...};
     auto newFactors = primefactorization(num1);
-    size_t product  = 1;
+    usize product   = 1;
     for (auto& map : primeFactorVec) {
         for (auto& e : map) {
             if (newFactors.find(e.first) != newFactors.end()) {
@@ -52,7 +48,7 @@ size_t lcm(const T num1, const T num2, Args... nums) {
     return product;
 }
 
-// size_t gcd(const int n1, const int n2) {
+// usize gcd(const int n1, const int n2) {
 //
 //	if (n2 == 0)
 //		return n1;
@@ -60,7 +56,7 @@ size_t lcm(const T num1, const T num2, Args... nums) {
 //	gcd(n2, n1 % n2);
 // }
 //
-// size_t egcd(const int n1, const int n2) {
+// usize egcd(const int n1, const int n2) {
 //
 //	if (n2 == 0)
 //		return n1;
@@ -71,7 +67,7 @@ class Array;
 
 using Array2D = cor::Array<cor::Array<float>>;
 
-Array2D identityMatrix(size_t N);
+Array2D identityMatrix(usize N);
 
 Array2D matrixAdd2D(Array2D& first, Array2D& second);
 

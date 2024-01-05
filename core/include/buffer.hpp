@@ -7,8 +7,6 @@
 
 namespace cor {
 
-typedef unsigned long long size_ty;
-
 template <typename T>
 class Buffer {
 public:
@@ -16,13 +14,13 @@ public:
     constexpr Buffer() : end_ptr(nullptr), begin_ptr(nullptr) {
     }
 
-    constexpr Buffer(size_ty size)
+    constexpr Buffer(usize size)
         : begin_ptr(mem::template allocateArr<T>(size)),
           end_ptr(begin_ptr + size) {
     }
 
-    constexpr Buffer(const T* source, size_ty size) : Buffer(size) {
-        for (size_ty i = 0; i < size; i++) {
+    constexpr Buffer(const T* source, usize size) : Buffer(size) {
+        for (usize i = 0; i < size; i++) {
             this->begin_ptr[i] = cor::isMovable(source[i]);
         }
     }
@@ -51,14 +49,14 @@ public:
     }
 
     // Access
-    constexpr T& operator[](size_ty index) {
+    constexpr T& operator[](usize index) {
         return this->begin_ptr[index];
     }
-    constexpr const T& operator[](size_ty index) const {
+    constexpr const T& operator[](usize index) const {
         return this->begin_ptr[index];
     }
 
-    constexpr size_ty size() const {
+    constexpr usize size() const {
         return this->end_ptr - this->begin_ptr;
     }
     constexpr bool empty() {

@@ -1,6 +1,8 @@
 #ifndef TYPE_TRAITS_HPP
 #define TYPE_TRAITS_HPP
 
+#include "types.hpp"
+
 namespace cor {
 
 template <typename T>
@@ -38,7 +40,7 @@ struct RemoveExtent<T[]> {
     typedef T Type;
 };
 
-template <class T, size_t N>
+template <class T, usize N>
 struct RemoveExtent<T[N]> {
     typedef T Type;
 };
@@ -95,7 +97,7 @@ struct IsArray : FalseType {};
 template <class T>
 struct IsArray<T[]> : TrueType {};
 
-template <class T, size_t N>
+template <class T, usize N>
 struct IsArray<T[N]> : TrueType {};
 
 template <class T>

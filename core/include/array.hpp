@@ -3,6 +3,7 @@
 
 #include "buffer.hpp"
 #include "range.hpp"
+
 namespace cor {
 
 template <typename T>
@@ -16,13 +17,13 @@ public:
     // constructors
     constexpr Array() : buffer(0) {
     }
-    constexpr Array(size_ty size) : buffer(size), currentSize(size) {
+    constexpr Array(usize size) : buffer(size), currentSize(size) {
     }
-    constexpr Array(const T* source, size_ty size)
+    constexpr Array(const T* source, usize size)
         : buffer(source, size), currentSize(size) {
     }
-    constexpr Array(size_t size, const T& val) : Array(size) {
-        for (size_t i = 0; i < size; i++) {
+    constexpr Array(usize size, const T& val) : Array(size) {
+        for (usize i = 0; i < size; i++) {
             this->buffer[i] = val;
         }
     }
@@ -48,17 +49,17 @@ public:
     }
 
     // Access
-    constexpr reference operator[](size_ty index) {
+    constexpr reference operator[](usize index) {
         return buffer[index];
     }
-    constexpr const_reference operator[](size_ty index) const {
+    constexpr const_reference operator[](usize index) const {
         return buffer[index];
     }
 
-    constexpr reference at(size_ty index) {
+    constexpr reference at(usize index) {
         return buffer[index];
     }
-    constexpr const_reference at(size_ty index) const {
+    constexpr const_reference at(usize index) const {
         return buffer[index];
     }
 
@@ -70,16 +71,16 @@ public:
     }
 
     // Capacity
-    constexpr size_ty size() const {
+    constexpr usize size() const {
         return currentSize;
     }
     constexpr bool empty() {
         return currentSize == 0 ? true : false;
     }
-    constexpr size_ty capacity() {
+    constexpr usize capacity() {
         return buffer.size();
     }
-    constexpr void reserve(size_ty newSize) {
+    constexpr void reserve(usize newSize) {
         if (newSize > this->capacity()) {
             realoc(newSize);
         }
@@ -110,12 +111,12 @@ public:
     constexpr void popBack() {
         --currentSize;
     }
-    constexpr void resize(size_ty newSize) {
+    constexpr void resize(usize newSize) {
         Array newArr(newSize);
 
         auto count = newSize < this->size() ? newSize : this->size();
 
-        for (size_t i = 0; i < count; i++) {
+        for (usize i = 0; i < count; i++) {
             newArr[i] = cor::isMovable(buffer[i]);
         }
 
@@ -140,7 +141,7 @@ public:
     constexpr Slice<T> slice() {
         return Slice<T>(this->begin(), this->end());
     }
-    constexpr Slice<T> slice(size_t first, size_t last) {
+    constexpr Slice<T> slice(usize first, usize last) {
         return Slice<T>(this->begin() + first, this->begin() + last);
     }
 
@@ -155,7 +156,7 @@ public:
 
 private:
     constexpr void expand() {
-        size_ty newSize = static_cast<size_ty>(this->capacity() * 1.5);
+        usize newSize = static_cast<usize>(this->capacity() * 1.5);
         if (this->capacity() == 0) {
             newSize = 1;
         } else if (this->capacity() == 1) {
@@ -164,35 +165,17 @@ private:
 
         realoc(newSize);
     }
-    constexpr void realoc(size_ty newSize) {
+    constexpr void realoc(usize newSize) {
         Buffer<T> newBuffer(newSize);
-        for (size_t i = 0; i < newSize; i++) {
+        for (usize i = 0; i < newSize; i++) {
             newBuffer[i] = buffer[i];
         }
         buffer.swap(newBuffer);
     }
 
     Buffer<T> buffer;
-    size_ty currentSize = 0;
+    usize currentSize = 0;
 };
-
-template <class T>
-void PrintArr(const Array<T>& arr) {
-    for (auto& e : arr) {
-        std::cout << e << ", ";
-    }
-    std::cout << "\n";
-}
-
-template <class T>
-void PrintArr(const Array<Array<T>>& arr) {
-    for (size_t row = 0; row < arr.size(); row++) {
-        for (size_t col = 0; col < arr[row].size(); col++) {
-            std::cout << arr[row][col] << ", ";
-        }
-        std::cout << "\n";
-    }
-}
 
 }  // namespace cor
 

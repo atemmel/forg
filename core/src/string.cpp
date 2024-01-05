@@ -1,8 +1,8 @@
 #include "string.hpp"
 
-cor::String::String(size_t count, char chr) : ssize(count) {
+cor::String::String(usize count, char chr) : ssize(count) {
     this->ptr = allocator.createN(this->ssize + 1);
-    size_t i  = 0;
+    usize i   = 0;
     for (; i < count; i++) {
         this->ptr[i] = chr;
     }
@@ -12,7 +12,7 @@ cor::String::String(size_t count, char chr) : ssize(count) {
 cor::String::String(const_pointer s) : String(s, cor::strlen(s)) {
 }
 
-cor::String::String(const_pointer s, size_t count) {
+cor::String::String(const_pointer s, usize count) {
     this->ssize = count;
     this->ptr   = allocator.createN(this->ssize + 1);
     mem::memCopy(s, s + this->ssize, this->ptr);
@@ -58,11 +58,11 @@ cor::String& cor::String::operator=(std::initializer_list<char> ilist) {
     return *this;
 }
 
-cor::String::reference cor::String::operator[](size_t index) {
+cor::String::reference cor::String::operator[](usize index) {
     return this->data()[index];
 }
 
-cor::String::const_reference cor::String::operator[](size_t index) const {
+cor::String::const_reference cor::String::operator[](usize index) const {
     return this->data()[index];
 }
 
@@ -98,7 +98,7 @@ cor::String::const_pointer cor::String::end() const noexcept {
     return this->data() + this->size();
 }
 
-constexpr size_t cor::String::size() const noexcept {
+constexpr usize cor::String::size() const noexcept {
     return this->ssize;
 }
 
@@ -110,7 +110,7 @@ cor::String::pointer cor::String::data() noexcept {
     return this->ptr;
 }
 
-cor::Slice<char> cor::String::slice(size_t first, size_t last) {
+cor::Slice<char> cor::String::slice(usize first, usize last) {
     return Slice<char>(this->begin() + first, this->begin() + last);
 }
 
