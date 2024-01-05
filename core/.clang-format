@@ -2,3 +2,7 @@ BasedOnStyle: Google
 IndentWidth: 4
 AllowShortFunctionsOnASingleLine: None
 AlignConsecutiveAssignments: Consecutive
+AccessModifierOffset: -4
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 2

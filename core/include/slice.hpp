@@ -5,7 +5,7 @@
 
 template <typename T>
 class Slice {
-   public:
+public:
     constexpr Slice(T* ptr, usize length) : ptr(ptr), length(length) {
     }
 
@@ -49,7 +49,7 @@ class Slice {
         return Slice(begin() + first, begin() + last);
     }
 
-   private:
+private:
     T* ptr;
     usize length;
 };

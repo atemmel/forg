@@ -6,7 +6,7 @@
 
 template <typename T, usize I>
 class StaticArray {
-   public:
+public:
     constexpr StaticArray() {
     }
 
@@ -47,6 +47,6 @@ class StaticArray {
         return Slice(begin() + first, begin() + last);
     }
 
-   private:
+private:
     T carray[I];
 };
