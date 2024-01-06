@@ -1,2 +1,4 @@
+*.gcno
+*.gcov
 *.o
 core/test
