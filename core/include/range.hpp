@@ -8,6 +8,10 @@ namespace cor {
 template <class T>
 class Slice {
 public:
+
+    constexpr Slice(const T* s, usize count) : first(s), ssize(count) {
+    }
+
     Slice(T* first = nullptr, T* last = nullptr)
         : first(first), ssize((last - first)) {
     }
@@ -68,11 +72,6 @@ class View {
 public:
     constexpr View(const T* s, usize count) : first(s), last(s + count) {
     }
-
-    /* TODO: se över detta
-constexpr View(const T* s) : first(s), last(s + cor::strlen(s)) {
-}
-    */
 
     View(T* first = nullptr, T* last = nullptr) : first(first), last(last) {
     }

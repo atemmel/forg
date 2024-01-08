@@ -112,7 +112,6 @@ public:
         }
     }
 
-    template <typename T>
     void remove(T key) {
         if (search(key)) {
             usize index = this->hashFunk(key);
