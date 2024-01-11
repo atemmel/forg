@@ -44,6 +44,14 @@ constexpr void iterSwap(Iter first, Iter second) {
     cor::moveSwap(*first, *second);
 }
 
+template <class T, size_t N>
+constexpr void swap(T (&a)[N], T (&b)[N]) noexcept {
+    auto tmp_a = a, tmp_b = b;
+    for (size_t i = 0; i < N; i++) {
+        iterSwap(tmp_a++, tmp_b++);
+    }
+}
+
 template <class T, class U = T>
 constexpr T exchange(T& obj, U&& new_value) {
     auto old_val = isMovable(obj);

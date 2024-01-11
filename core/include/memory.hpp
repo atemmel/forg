@@ -38,8 +38,8 @@ void deallocateArr(T* ptr) {
 }
 
 template <typename T>
-std::remove_extent_t<T>* allocate_r_extent(usize size) {
-    typedef std::remove_extent_t<T> Elem;
+cor::RemoveExtent_T<T>* allocate_r_extent(usize size) {
+    typedef cor::RemoveExtent_T<T> Elem;
     Elem* alocatedMem = DBG_NEW Elem[size]();
     return alocatedMem;
 }
