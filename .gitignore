@@ -1,4 +1,6 @@
 *.gcno
 *.gcov
 *.o
+forg
+!cmd/forg
 core/test
