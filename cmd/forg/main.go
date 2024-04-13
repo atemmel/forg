@@ -1,33 +1,45 @@
 package main
 
 import (
+	_ "embed"
 	"flag"
-	"fmt"
+	"forg/pkg/log"
 	"os"
+	"path/filepath"
 )
 
 var (
-	path = "."
+	workingDirectory = "."
+
+	//go:embed embed/main.cpp
+	mainBoilerplate string
 )
 
-func die(args ...any) {
-	fmt.Fprintln(os.Stderr, args...)
-	os.Exit(1)
+func init() {
+	flag.StringVar(&workingDirectory, "p", ".", "Set path to project to operate on")
+	flag.Parse()
 }
 
-func init() {
-	flag.StringVar(&path, "-p", ".", "Set path to project to operate on")
-	flag.Parse()
+func initCmd() {
+	err := os.WriteFile(filepath.Join(workingDirectory, "main.cpp"), []byte(mainBoilerplate), 0o644)
+	log.Assert(err)
+
+	absPath := workingDirectory
+	if p, e := filepath.Abs(absPath); e == nil {
+		absPath = p
+	}
+
+	log.Stderr("Initialized new project in %s", absPath)
 }
 
 func main() {
 	op := flag.Arg(0)
 	if op == "" {
-		die("No operation specified...")
+		log.Stderr("No operation specified...\n")
 	}
 
 	switch op {
 	case "init":
-		fmt.Println("init")
+		initCmd()
 	}
 }
