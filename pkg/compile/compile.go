@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"runtime"
 	"sync"
 )
@@ -16,7 +17,8 @@ type Unit struct {
 }
 
 type Target struct {
-	Units []Unit
+	Units    []Unit
+	BuildDir string
 }
 
 type compileCtx struct {
@@ -57,7 +59,7 @@ func Compile(t *Target) error {
 	for i := 0; i < nUnits; i++ {
 		err = <-compileCtx.results
 		if err != nil {
-			log.Error("Error occured, waiting for unfinished jobs...\n")
+			log.Stderr("Error occured, waiting for unfinished jobs...\n")
 			cancel()
 			break
 		}
@@ -68,8 +70,8 @@ func Compile(t *Target) error {
 		return err
 	}
 
-	log.Error("[100%%]\n")
-	return nil
+	log.Stderr("[100%%]\n")
+	return linkTarget(&compileCtx)
 }
 
 func queueWork(compileCtx *compileCtx) {
@@ -103,12 +105,30 @@ func logCompilation(compileCtx *compileCtx, unit Unit) {
 	filename := path.Base(unit.Path)
 	progress := int(math.Round(float64(step) / float64(nUnits) * 100))
 	//TODO: prefix with \033[2K\r
-	log.Error("[%3d%%] %s\n", progress, filename)
+	log.Stderr("[%3d%%] %s\n", progress, filename)
 	compileCtx.step++
 }
 
 func compileUnit(compileCtx *compileCtx, unit Unit) error {
-	cmd := exec.CommandContext(compileCtx.ctx, "g++", "-c", unit.Path)
+	base := filepath.Base(unit.Path)
+	fullpath := filepath.Join(compileCtx.target.BuildDir, base+".o")
+	cmd := exec.CommandContext(compileCtx.ctx, "g++", "-c", unit.Path, "-o", fullpath)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
+func linkTarget(compileCtx *compileCtx) error {
+	glob, err := filepath.Glob(filepath.Join(compileCtx.target.BuildDir, "*.o"))
+	if err != nil {
+		return err
+	}
+	args := []string{
+		"-o",
+		"main",
+	}
+	args = append(args, glob...)
+	cmd := exec.CommandContext(compileCtx.ctx, "g++", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()

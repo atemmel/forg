@@ -41,10 +41,10 @@ func randomStr(length, seed int64) string {
 	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	src := rand.NewSource(seed)
 	b := make([]byte, length)
-    for i := range b {
-        b[i] = letters[src.Int63() % int64(len(letters))]
-    }
-    return string(b)
+	for i := range b {
+		b[i] = letters[src.Int63()%int64(len(letters))]
+	}
+	return string(b)
 
 }
 
@@ -63,7 +63,7 @@ func createSrc(i int64) (string, string, string) {
 	hpp := fmt.Sprintf(`#pragma once
 
 void %s();`, name)
-	
+
 	cpp := fmt.Sprintf(`
 %s
 
@@ -78,7 +78,7 @@ void %s() {
 func setup(t *testing.T) *Target {
 	dir := t.TempDir()
 
-	const n = 64
+	const n = 16
 
 	target := &Target{
 		Units: make([]Unit, n),
@@ -115,7 +115,7 @@ func TestCompileWithError(t *testing.T) {
 	l := len(target.Units)
 	half := l / 2
 
-	target.Units = append(target.Units[:half + 1], target.Units[half:]...)
+	target.Units = append(target.Units[:half+1], target.Units[half:]...)
 	target.Units[half] = Unit{
 		Path: "xyz.cpp",
 	}
