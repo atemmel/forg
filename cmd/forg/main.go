@@ -6,6 +6,7 @@ import (
 	"forg/pkg/compile"
 	"forg/pkg/log"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -35,6 +36,8 @@ func initCmd() {
 }
 
 func buildCmd() {
+	_, err := os.Stat(workingDirectory)
+	log.Assert(err)
 	buildDir := filepath.Join(workingDirectory, "build")
 	_ = os.Mkdir(buildDir, 0o755)
 	glob := filepath.Join(workingDirectory, "*.cpp")
@@ -53,6 +56,15 @@ func buildCmd() {
 	log.Assert(err)
 }
 
+func runCmd() {
+	buildCmd()
+	buildDir := filepath.Join(workingDirectory, "build")
+	cmd := exec.Command(filepath.Join(buildDir, "main"))
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	log.Assert(cmd.Run())
+}
+
 func main() {
 	op := flag.Arg(0)
 	if op == "" {
@@ -64,5 +76,7 @@ func main() {
 		initCmd()
 	case "build":
 		buildCmd()
+	case "run":
+		runCmd()
 	}
 }

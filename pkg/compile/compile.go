@@ -23,21 +23,29 @@ type Target struct {
 
 type compileCtx struct {
 	ctx       context.Context
-	results   chan error
+	results   chan result
 	step      int
 	stepMutex sync.Mutex
 	target    *Target
 	units     chan Unit
 }
 
+type result struct {
+	unit Unit
+	err  error
+}
+
 func Compile(t *Target) error {
 	nUnits := len(t.Units)
+	if nUnits == 0 {
+		return nil
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	compileCtx := compileCtx{
 		ctx:       ctx,
-		results:   make(chan error, nUnits),
+		results:   make(chan result, nUnits),
 		step:      0,
 		stepMutex: sync.Mutex{},
 		target:    t,
@@ -46,32 +54,32 @@ func Compile(t *Target) error {
 
 	// create worker pool
 	nCpu := runtime.NumCPU()
-	for i := 0; i < nCpu; i++ {
+	for i := 0; i < min(nUnits, nCpu); i++ {
 		go startWorker(&compileCtx)
 	}
 
 	// queue data for pool
 	go queueWork(&compileCtx)
 
-	var err error
-
 	// wait for workerpool to be done
 	for i := 0; i < nUnits; i++ {
-		err = <-compileCtx.results
-		if err != nil {
+		result := <-compileCtx.results
+		if result.err != nil {
 			log.Stderr("Error occured, waiting for unfinished jobs...\n")
 			cancel()
-			break
+			return result.err
 		}
+
+		logCompilation(&compileCtx, result.unit)
 	}
+
 	cancel()
 
-	if err != nil {
-		return err
+	err := linkTarget(&compileCtx)
+	if err == nil {
+		log.Stderr("[100%%] link\n")
 	}
-
-	log.Stderr("[100%%]\n")
-	return linkTarget(&compileCtx)
+	return err
 }
 
 func queueWork(compileCtx *compileCtx) {
@@ -82,12 +90,16 @@ func queueWork(compileCtx *compileCtx) {
 }
 
 func startWorker(compileCtx *compileCtx) {
-	for unit := range compileCtx.units {
-		if compileCtx.ctx.Err() != nil {
-			compileCtx.results <- nil
-		} else {
-			logCompilation(compileCtx, unit)
-			compileCtx.results <- compileUnit(compileCtx, unit)
+	for {
+		select {
+		case unit := <-compileCtx.units:
+			//logCompilation(compileCtx, unit)
+			compileCtx.results <- result{
+				err:  compileUnit(compileCtx, unit),
+				unit: unit,
+			}
+		case _ = <-compileCtx.ctx.Done():
+			return
 		}
 	}
 }
@@ -95,15 +107,12 @@ func startWorker(compileCtx *compileCtx) {
 func logCompilation(compileCtx *compileCtx, unit Unit) {
 	compileCtx.stepMutex.Lock()
 	defer compileCtx.stepMutex.Unlock()
-	if compileCtx.ctx.Err() != nil {
-		return
-	}
 
 	nUnits := len(compileCtx.target.Units)
 	step := compileCtx.step
 
 	filename := path.Base(unit.Path)
-	progress := int(math.Round(float64(step) / float64(nUnits) * 100))
+	progress := int(math.Round(float64(step+1) / float64(nUnits+1) * 100))
 	//TODO: prefix with \033[2K\r
 	log.Stderr("[%3d%%] %s\n", progress, filename)
 	compileCtx.step++
@@ -125,10 +134,10 @@ func linkTarget(compileCtx *compileCtx) error {
 	}
 	args := []string{
 		"-o",
-		"main",
+		filepath.Join(compileCtx.target.BuildDir, "main"),
 	}
 	args = append(args, glob...)
-	cmd := exec.CommandContext(compileCtx.ctx, "g++", args...)
+	cmd := exec.Command("g++", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
