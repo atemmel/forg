@@ -3,6 +3,7 @@ package compile
 import (
 	"context"
 	"forg/pkg/log"
+	"forg/pkg/util"
 	"math"
 	"os"
 	"os/exec"
@@ -17,8 +18,11 @@ type Unit struct {
 }
 
 type Target struct {
-	Units    []Unit
-	BuildDir string
+	ProjectName string
+	OutputPath  string
+	ProjectDir  string
+	BuildDir    string
+	Units       []Unit
 }
 
 type compileCtx struct {
@@ -35,7 +39,42 @@ type result struct {
 	err  error
 }
 
+func NewTarget(workingDir string) (*Target, error) {
+	absWorkingDir, err := filepath.Abs(workingDir)
+	if err != nil {
+		return nil, err
+	}
+	files, err := filepath.Glob(absWorkingDir + "/*.cpp")
+	if err != nil {
+		return nil, err
+	}
+
+	units := make([]Unit, len(files))
+	for i := range files {
+		units[i] = Unit{
+			Path: files[i],
+		}
+	}
+
+	projectName := filepath.Base(absWorkingDir)
+	buildDir := workingDir + "/build"
+
+	return &Target{
+		ProjectName: projectName,
+		ProjectDir:  absWorkingDir,
+		OutputPath:  buildDir + "/" + projectName,
+		Units:       units,
+		BuildDir:    buildDir,
+	}, nil
+}
+
 func Compile(t *Target) error {
+	_, err := os.Stat(t.ProjectDir)
+	if os.IsNotExist(err) {
+		return err
+	}
+	_ = os.Mkdir(t.BuildDir, 0o755)
+
 	nUnits := len(t.Units)
 	if nUnits == 0 {
 		return nil
@@ -75,7 +114,7 @@ func Compile(t *Target) error {
 
 	cancel()
 
-	err := linkTarget(&compileCtx)
+	err = linkTarget(&compileCtx)
 	if err == nil {
 		log.Stderr("[100%%] link\n")
 	}
@@ -128,17 +167,14 @@ func compileUnit(compileCtx *compileCtx, unit Unit) error {
 }
 
 func linkTarget(compileCtx *compileCtx) error {
-	glob, err := filepath.Glob(filepath.Join(compileCtx.target.BuildDir, "*.o"))
+	glob, err := filepath.Glob(compileCtx.target.BuildDir + "/*.o")
 	if err != nil {
 		return err
 	}
 	args := []string{
+		"g++",
 		"-o",
-		filepath.Join(compileCtx.target.BuildDir, "main"),
+		compileCtx.target.OutputPath,
 	}
-	args = append(args, glob...)
-	cmd := exec.Command("g++", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	return util.Run(append(args, glob...))
 }
