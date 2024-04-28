@@ -2,6 +2,7 @@ package compile
 
 import (
 	"fmt"
+	"forg/pkg/log"
 	"math/rand"
 	"os"
 	"path"
@@ -48,13 +49,12 @@ func randomStr(length, seed int64) string {
 
 }
 
-func writeFile(dir, file, content string) string {
+func writeFile(dir, file, content string) {
 	fullpath := path.Join(dir, file)
 	err := os.WriteFile(fullpath, []byte(content), 0o644)
 	if err != nil {
 		panic(err)
 	}
-	return fullpath
 }
 
 func createSrc(i int64) (string, string, string) {
@@ -80,23 +80,17 @@ func setup(t *testing.T) *Target {
 
 	const n = 16
 
-	target := &Target{
-		Units: make([]Unit, n),
-	}
-
 	for i := int64(0); i < n; i++ {
 		name, hppSrc, cppSrc := createSrc(i)
 		hppPath := fmt.Sprintf("%s.hpp", name)
 		cppPath := fmt.Sprintf("%s.cpp", name)
 
-		_ = writeFile(dir, hppPath, hppSrc)
-		fullpath := writeFile(dir, cppPath, cppSrc)
-
-		target.Units[i] = Unit{
-			Path: fullpath,
-		}
+		writeFile(dir, hppPath, hppSrc)
+		writeFile(dir, cppPath, cppSrc)
 	}
 
+	target, err := NewTarget(dir)
+	log.Assert(err)
 	return target
 }
 

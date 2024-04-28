@@ -10,7 +10,6 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
-	"sync"
 )
 
 type Unit struct {
@@ -26,12 +25,11 @@ type Target struct {
 }
 
 type compileCtx struct {
-	ctx       context.Context
-	results   chan result
-	step      int
-	stepMutex sync.Mutex
-	target    *Target
-	units     chan Unit
+	ctx     context.Context
+	results chan result
+	step    int
+	target  *Target
+	units   chan Unit
 }
 
 type result struct {
@@ -83,12 +81,11 @@ func Compile(t *Target) error {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	compileCtx := compileCtx{
-		ctx:       ctx,
-		results:   make(chan result, nUnits),
-		step:      0,
-		stepMutex: sync.Mutex{},
-		target:    t,
-		units:     make(chan Unit, nUnits),
+		ctx:     ctx,
+		results: make(chan result, nUnits),
+		step:    0,
+		target:  t,
+		units:   make(chan Unit, nUnits),
 	}
 
 	// create worker pool
@@ -132,7 +129,6 @@ func startWorker(compileCtx *compileCtx) {
 	for {
 		select {
 		case unit := <-compileCtx.units:
-			//logCompilation(compileCtx, unit)
 			compileCtx.results <- result{
 				err:  compileUnit(compileCtx, unit),
 				unit: unit,
@@ -144,9 +140,6 @@ func startWorker(compileCtx *compileCtx) {
 }
 
 func logCompilation(compileCtx *compileCtx, unit Unit) {
-	compileCtx.stepMutex.Lock()
-	defer compileCtx.stepMutex.Unlock()
-
 	nUnits := len(compileCtx.target.Units)
 	step := compileCtx.step
 
@@ -175,6 +168,7 @@ func linkTarget(compileCtx *compileCtx) error {
 		"g++",
 		"-o",
 		compileCtx.target.OutputPath,
+		"-lraylib",
 	}
 	return util.Run(append(args, glob...))
 }
