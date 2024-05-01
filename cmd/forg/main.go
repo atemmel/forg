@@ -11,17 +11,20 @@ import (
 )
 
 var (
-	workingDirectory = ""
+	workingDirectory = "."
 
 	//go:embed template/*
 	templateProject embed.FS
 )
 
 func init() {
-	wd, err := os.Getwd()
-	log.Assert(err)
-	flag.StringVar(&workingDirectory, "p", wd, "Set path to project to operate on")
+	flag.StringVar(&workingDirectory, "p", ".", "Set path to project to operate on")
 	flag.Parse()
+	if workingDirectory == "." {
+		var err error
+		workingDirectory, err = os.Getwd()
+		log.Assert(err)
+	}
 }
 
 func initCmd() {
