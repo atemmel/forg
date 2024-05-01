@@ -13,9 +13,9 @@ auto main() -> int {
 
     BeginDrawing();
     ClearBackground(Color{
-        .r = 0,
-        .g = 0,
-        .b = 0,
+        .r = 15,
+        .g = 15,
+        .b = 15,
         .a = 255,
     });
 

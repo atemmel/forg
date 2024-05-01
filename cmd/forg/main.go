@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "embed"
+	"embed"
 	"flag"
 	"forg/pkg/compile"
 	"forg/pkg/log"
@@ -11,14 +11,16 @@ import (
 )
 
 var (
-	workingDirectory = "."
+	workingDirectory = ""
 
-	//go:embed embed/main.cpp
-	mainBoilerplate []byte
+	//go:embed template/*
+	templateProject embed.FS
 )
 
 func init() {
-	flag.StringVar(&workingDirectory, "p", ".", "Set path to project to operate on")
+	wd, err := os.Getwd()
+	log.Assert(err)
+	flag.StringVar(&workingDirectory, "p", wd, "Set path to project to operate on")
 	flag.Parse()
 }
 
@@ -28,9 +30,20 @@ func initCmd() {
 	if os.IsNotExist(err) {
 		log.Assert(err)
 	}
-	err = os.WriteFile(filepath.Join(workingDirectory, "main.cpp"), mainBoilerplate, 0o644)
-	if os.IsExist(err) {
-		log.Assert(err)
+	entries, err := templateProject.ReadDir("template")
+	log.Assert(err)
+
+	for _, entry := range entries {
+		if entry.Type().IsRegular() {
+			inPath := filepath.Join("template", entry.Name())
+			outPath := filepath.Join(workingDirectory, entry.Name())
+			bytes, err := templateProject.ReadFile(inPath)
+			log.Assert(err)
+			err = os.WriteFile(outPath, bytes, 0o644)
+			if os.IsExist(err) {
+				log.Assert(err)
+			}
+		}
 	}
 
 	absPath := workingDirectory
