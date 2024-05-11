@@ -13,10 +13,10 @@ private:
         }
 
         int data;
-        cor::UniquePtr<Node> next = nullptr;
+        forg::UniquePtr<Node> next = nullptr;
     };
 
-    using HashArr = cor::Array<cor::UniquePtr<Node>>;
+    using HashArr = forg::Array<forg::UniquePtr<Node>>;
 
     HashArr hashTable;
     usize ssize = 0;
@@ -25,7 +25,7 @@ private:
     const float DEFAULT_LOAD_FACTOR = 2;
 
     usize hashFunk(T key) {
-        return cor::Hash<T>{}(key) % this->hashTable.size();
+        return forg::Hash<T>{}(key) % this->hashTable.size();
     }
 
 public:
@@ -91,19 +91,19 @@ public:
     }
 
     void insert(T key) {
-        auto newNode = cor::makeUnique<Node>(key);
+        auto newNode = forg::makeUnique<Node>(key);
 
         usize index = this->hashFunk(key);
 
         if (this->hashTable[index] == nullptr) {
-            this->hashTable[index] = cor::isMovable(newNode);
+            this->hashTable[index] = forg::isMovable(newNode);
             ssize++;
         } else {
             auto curr = this->hashTable[index].get();
             while (curr->next != nullptr) {
                 curr = curr->next.get();
             }
-            curr->next = cor::isMovable(newNode);
+            curr->next = forg::isMovable(newNode);
             ssize++;
         }
 
@@ -118,14 +118,14 @@ public:
 
             if (this->hashTable.at(index).get()->data == key) {
                 this->hashTable.at(index) =
-                    cor::isMovable(this->hashTable.at(index).get()->next);
+                    forg::isMovable(this->hashTable.at(index).get()->next);
             } else {
                 auto head = this->hashTable.at(index).get();
                 while (head->next && head->next->data != key) {
                     head = head->next.get();
                 }
                 if (head->next) {
-                    head->next = cor::isMovable(head->next->next);
+                    head->next = forg::isMovable(head->next->next);
                 }
             }
             this->ssize--;
@@ -161,7 +161,7 @@ public:
 
     void swap(HashTable& other) {
         this->hashTable.swap(other.hashTable);
-        cor::swap(this->ssize, other.ssize);
+        forg::swap(this->ssize, other.ssize);
     }
     void print() {
         // for (auto &node : this->hashTable)

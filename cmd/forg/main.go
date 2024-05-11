@@ -81,6 +81,7 @@ func main() {
 
 	switch op {
 	case "init":
+		workingDirectory = util.Either(flag.Arg(1), workingDirectory)
 		initCmd()
 	case "build":
 		buildCmd()

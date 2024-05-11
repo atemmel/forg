@@ -8,14 +8,14 @@
 #include "types.hpp"
 #include "utility.hpp"
 
-namespace cor {
+namespace forg {
 
 // non array types
 template <class T, class Deleter = mem::Deleter<T>>
 class UniquePtr {
 public:
-    using deleterNoRef = typename cor::RemoveReference_T<Deleter>;
-    using Pointer      = typename cor::addPointer_T<T, deleterNoRef>;
+    using deleterNoRef = typename forg::RemoveReference_T<Deleter>;
+    using Pointer      = typename forg::addPointer_T<T, deleterNoRef>;
     using Elem_t       = T;
 
     // Constructors
@@ -26,14 +26,14 @@ public:
 
     UniquePtr(UniquePtr&& other) {
         this->reset(other.release());
-        deleter = cor::forward<Deleter>(other.getDeleter());
+        deleter = forg::forward<Deleter>(other.getDeleter());
     }
 
     // assigns
     UniquePtr& operator=(UniquePtr&& other) noexcept {
         {
             this->reset(other.release());
-            deleter = cor::forward<Deleter>(other.getDeleter());
+            deleter = forg::forward<Deleter>(other.getDeleter());
             return *this;
         }
     }
@@ -62,8 +62,8 @@ public:
         }
     }
     void swap(UniquePtr& other) noexcept {
-        cor::swap(this->pointer, other.pointer);
-        cor::swap(this->deleter, other.deleter);
+        forg::swap(this->pointer, other.pointer);
+        forg::swap(this->deleter, other.deleter);
     }
 
     // Observers
@@ -101,8 +101,8 @@ private:
 template <class T, class Deleter>
 class UniquePtr<T[], Deleter> {
 public:
-    using deleterNoRef = typename cor::RemoveReference_T<Deleter>;
-    using Pointer      = typename cor::addPointer_T<T, deleterNoRef>;
+    using deleterNoRef = typename forg::RemoveReference_T<Deleter>;
+    using Pointer      = typename forg::addPointer_T<T, deleterNoRef>;
     using Elem_t       = T;
 
     // Constructors
@@ -115,14 +115,14 @@ public:
 
     UniquePtr(UniquePtr&& other) {
         this->reset(other.release());
-        deleter = cor::forward<Deleter>(other.getDeleter());
+        deleter = forg::forward<Deleter>(other.getDeleter());
     }
 
     // assigns
     UniquePtr& operator=(UniquePtr&& other) noexcept {
         {
             this->reset(other.release());
-            deleter = cor::forward<Deleter>(other.getDeleter());
+            deleter = forg::forward<Deleter>(other.getDeleter());
             return *this;
         }
     }
@@ -155,8 +155,8 @@ public:
         reset(Pointer());
     }
     void swap(UniquePtr& other) noexcept {
-        cor::swap(this->pointer, other.pointer);
-        cor::swap(this->deleter, other.deleter);
+        forg::swap(this->pointer, other.pointer);
+        forg::swap(this->deleter, other.deleter);
     }
 
     // Observers
@@ -196,14 +196,14 @@ private:
 
 // non array type
 template <class T, class... Args,
-          cor::EnableIf_T<!cor::IsArray_T<T>, bool> = true>
+          forg::EnableIf_T<!forg::IsArray_T<T>, bool> = true>
 constexpr UniquePtr<T> makeUnique(Args&&... args) {
     return UniquePtr<T>(mem::allocate<T>(args...));
 }
 
 // array type
-template <class T, cor::EnableIf_T<cor::IsArray_T<T> && std::extent_v<T> == 0,
-                                   bool> = true>
+template <class T, forg::EnableIf_T<forg::IsArray_T<T> && std::extent_v<T> == 0,
+                                    bool> = true>
 constexpr UniquePtr<T> makeUnique(usize size) {
     return UniquePtr<T>(mem::allocate_r_extent<T>(size));
 }
@@ -223,6 +223,6 @@ bool operator!=(const UniquePtr<T, D>& ptr, NullType) noexcept {
     return (bool)ptr;
 }
 
-}  // namespace cor
+}  // namespace forg
 
 #endif  // !UNIQUEPTR_HPP

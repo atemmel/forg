@@ -3,12 +3,11 @@
 
 #include "types.hpp"
 
-namespace cor {
+namespace forg {
 
 template <class T>
 class Slice {
 public:
-
     constexpr Slice(const T* s, usize count) : first(s), ssize(count) {
     }
 
@@ -113,5 +112,5 @@ private:
     const T* last  = nullptr;
 };
 
-}  // namespace cor
+}  // namespace forg
 #endif  // !RANGE_HPP

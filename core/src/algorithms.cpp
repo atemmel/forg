@@ -1,6 +1,6 @@
 #include "algorithms.hpp"
 
-usize cor::strlen(const char* str) {
+usize forg::strlen(const char* str) {
     auto end = str;
     while (*end != '\0') {
         end++;
@@ -8,7 +8,7 @@ usize cor::strlen(const char* str) {
     return static_cast<usize>(end - str);
 }
 
-int cor::strcmp(const char* lhs, const char* rhs) {
+int forg::strcmp(const char* lhs, const char* rhs) {
     if (lhs && rhs) {
         auto left = lhs, right = rhs;
         while (*left != '\0' && *right != '\0') {

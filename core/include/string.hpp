@@ -3,12 +3,10 @@
 
 #include <initializer_list>
 
-#include "algorithms.hpp"
 #include "memory.hpp"
 #include "range.hpp"
-#include "utility.hpp"
 
-namespace cor {
+namespace forg {
 
 class String {
 public:
@@ -67,10 +65,10 @@ private:
     pointer ptr = nullptr;
 };
 
-bool operator==(const cor::String& lhs, const cor::String& rhs) noexcept;
-bool operator!=(const cor::String& lhs, const cor::String& rhs) noexcept;
-bool operator==(const cor::String& lhs, const char* rhs) noexcept;
-bool operator!=(const cor::String& lhs, const char* rhs) noexcept;
-}  // namespace cor
+bool operator==(const forg::String& lhs, const forg::String& rhs) noexcept;
+bool operator!=(const forg::String& lhs, const forg::String& rhs) noexcept;
+bool operator==(const forg::String& lhs, const char* rhs) noexcept;
+bool operator!=(const forg::String& lhs, const char* rhs) noexcept;
+}  // namespace forg
 
 #endif  // !STRING_HPP

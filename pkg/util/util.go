@@ -11,3 +11,10 @@ func Run(args []string) error {
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
+
+func Either(a, b string) string {
+	if a == "" {
+		return b
+	}
+	return a
+}

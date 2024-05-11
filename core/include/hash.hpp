@@ -2,7 +2,7 @@
 #define HASH_HPP
 #include "type_traits.hpp"
 
-namespace cor {
+namespace forg {
 constexpr usize FNV_OFFSET_BASIS = 14695981039346656037ull;
 constexpr usize FNV_prime        = 1099511628211ull;
 
@@ -44,6 +44,6 @@ struct Hash<T*> {
         return hash_funk(key);
     }
 };
-}  // namespace cor
+}  // namespace forg
 
 #endif  // !HASH_HPP

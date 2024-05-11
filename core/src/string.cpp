@@ -1,6 +1,8 @@
 #include "string.hpp"
 
-cor::String::String(usize count, char chr) : ssize(count) {
+#include "algorithms.hpp"
+
+forg::String::String(usize count, char chr) : ssize(count) {
     this->ptr = allocator.createN(this->ssize + 1);
     usize i   = 0;
     for (; i < count; i++) {
@@ -9,27 +11,27 @@ cor::String::String(usize count, char chr) : ssize(count) {
     this->ptr[i] = '\0';
 }
 
-cor::String::String(const_pointer s) : String(s, cor::strlen(s)) {
+forg::String::String(const_pointer s) : String(s, forg::strlen(s)) {
 }
 
-cor::String::String(const_pointer s, usize count) {
+forg::String::String(const_pointer s, usize count) {
     this->ssize = count;
     this->ptr   = allocator.createN(this->ssize + 1);
-    mem::memCopy(s, s + this->ssize, this->ptr);
+    mem::copy(s, s + this->ssize, this->ptr);
 }
 
-cor::String::String(const String& other) : String(other.data(), other.size()) {
+forg::String::String(const String& other) : String(other.data(), other.size()) {
 }
 
-cor::String::String(String&& other) noexcept {
+forg::String::String(String&& other) noexcept {
     this->swap(other);
 }
 
-cor::String::String(std::initializer_list<char> ilist)
+forg::String::String(std::initializer_list<char> ilist)
     : String(ilist.begin(), ilist.size()) {
 }
 
-cor::String& cor::String::operator=(const String& str) {
+forg::String& forg::String::operator=(const String& str) {
     if (*this != str) {
         auto temp(str);
         this->swap(temp);
@@ -37,108 +39,110 @@ cor::String& cor::String::operator=(const String& str) {
     return *this;
 }
 
-cor::String& cor::String::operator=(String&& str) noexcept {
+forg::String& forg::String::operator=(String&& str) noexcept {
     if (*this != str) {
         this->swap(str);
     }
     return *this;
 }
 
-cor::String& cor::String::operator=(const_pointer s) {
+forg::String& forg::String::operator=(const_pointer s) {
     if (*this != s) {
-        cor::String temp(s);
+        forg::String temp(s);
         this->swap(temp);
     }
     return *this;
 }
 
-cor::String& cor::String::operator=(std::initializer_list<char> ilist) {
-    cor::String temp(ilist);
+forg::String& forg::String::operator=(std::initializer_list<char> ilist) {
+    forg::String temp(ilist);
     this->swap(temp);
     return *this;
 }
 
-cor::String::reference cor::String::operator[](usize index) {
+forg::String::reference forg::String::operator[](usize index) {
     return this->data()[index];
 }
 
-cor::String::const_reference cor::String::operator[](usize index) const {
+forg::String::const_reference forg::String::operator[](usize index) const {
     return this->data()[index];
 }
 
-cor::String::reference cor::String::front() {
+forg::String::reference forg::String::front() {
     return this->data()[0];
 }
 
-cor::String::const_reference cor::String::front() const {
+forg::String::const_reference forg::String::front() const {
     return this->data()[0];
 }
 
-cor::String::reference cor::String::back() {
+forg::String::reference forg::String::back() {
     return this->data()[this->size() - 1];
 }
 
-cor::String::const_reference cor::String::back() const {
+forg::String::const_reference forg::String::back() const {
     return this->data()[this->size() - 1];
 }
 
-cor::String::pointer cor::String::begin() noexcept {
+forg::String::pointer forg::String::begin() noexcept {
     return this->data();
 }
 
-cor::String::const_pointer cor::String::begin() const noexcept {
+forg::String::const_pointer forg::String::begin() const noexcept {
     return this->data();
 }
 
-cor::String::pointer cor::String::end() noexcept {
+forg::String::pointer forg::String::end() noexcept {
     return this->data() + this->size();
 }
 
-cor::String::const_pointer cor::String::end() const noexcept {
+forg::String::const_pointer forg::String::end() const noexcept {
     return this->data() + this->size();
 }
 
-constexpr usize cor::String::size() const noexcept {
+constexpr usize forg::String::size() const noexcept {
     return this->ssize;
 }
 
-cor::String::const_pointer cor::String::data() const noexcept {
+forg::String::const_pointer forg::String::data() const noexcept {
     return this->ptr;
 }
 
-cor::String::pointer cor::String::data() noexcept {
+forg::String::pointer forg::String::data() noexcept {
     return this->ptr;
 }
 
-cor::Slice<char> cor::String::slice(usize first, usize last) {
+forg::Slice<char> forg::String::slice(usize first, usize last) {
     return Slice<char>(this->begin() + first, this->begin() + last);
 }
 
-cor::Slice<char> cor::String::slice() {
+forg::Slice<char> forg::String::slice() {
     return Slice<char>(this->begin(), this->end());
 }
 
-constexpr void cor::String::swap(String& other) noexcept {
-    cor::swap(this->ssize, other.ssize);
-    cor::swap(this->ptr, other.ptr);
+constexpr void forg::String::swap(String& other) noexcept {
+    forg::swap(this->ssize, other.ssize);
+    forg::swap(this->ptr, other.ptr);
 }
 
-cor::String::~String() {
+forg::String::~String() {
     allocator.deallocate(this->ptr);
 }
 
-bool cor::operator==(const cor::String& lhs, const cor::String& rhs) noexcept {
-    return cor::strcmp(lhs.data(), rhs.data()) == 0;
+bool forg::operator==(const forg::String& lhs,
+                      const forg::String& rhs) noexcept {
+    return forg::strcmp(lhs.data(), rhs.data()) == 0;
 }
 
-bool cor::operator!=(const cor::String& lhs, const cor::String& rhs) noexcept {
-    return cor::strcmp(lhs.data(), rhs.data()) != 0;
+bool forg::operator!=(const forg::String& lhs,
+                      const forg::String& rhs) noexcept {
+    return forg::strcmp(lhs.data(), rhs.data()) != 0;
 }
 
-bool cor::operator==(const cor::String& lhs, const char* rhs) noexcept {
-    return cor::strcmp(lhs.data(), rhs) == 0;
+bool forg::operator==(const forg::String& lhs, const char* rhs) noexcept {
+    return forg::strcmp(lhs.data(), rhs) == 0;
 }
 
-bool cor::operator!=(const cor::String& lhs, const char* rhs) noexcept {
-    return cor::strcmp(lhs.data(), rhs) != 0;
+bool forg::operator!=(const forg::String& lhs, const char* rhs) noexcept {
+    return forg::strcmp(lhs.data(), rhs) != 0;
 }

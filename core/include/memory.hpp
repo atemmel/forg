@@ -23,7 +23,7 @@
 
 constexpr auto DEFAULT_ALIGNMENT = 16ull;
 
-namespace cor::mem {
+namespace forg::mem {
 
 enum class alignVal_T : usize {};
 
@@ -38,8 +38,8 @@ void deallocateArr(T* ptr) {
 }
 
 template <typename T>
-cor::RemoveExtent_T<T>* allocate_r_extent(usize size) {
-    typedef cor::RemoveExtent_T<T> Elem;
+forg::RemoveExtent_T<T>* allocate_r_extent(usize size) {
+    typedef forg::RemoveExtent_T<T> Elem;
     Elem* alocatedMem = DBG_NEW Elem[size]();
     return alocatedMem;
 }
@@ -56,7 +56,7 @@ T* allocate() {
 
 template <typename T, typename... U>
 T* allocate(U&&... value) {
-    return DBG_NEW T(cor::forward<U>(value)...);
+    return DBG_NEW T(forg::forward<U>(value)...);
 }
 
 template <typename T>
@@ -66,7 +66,7 @@ void deallocate(T* ptr) {
 
 template <typename T, typename Place, typename... Args>
 T* allocatePlace(Place* place, Args&&... args) {
-    return ::new (place) T(cor::forward<Args>(args)...);
+    return ::new (place) T(forg::forward<Args>(args)...);
 }
 
 template <typename T, typename Place>
@@ -171,44 +171,44 @@ struct Deleter<T[]> {
 };
 
 template <typename InputIt, typename OutputIt>
-void memCopy(InputIt first, InputIt last, OutputIt d_first) {
+void copy(InputIt first, InputIt last, OutputIt d_first) {
     for (; first != last; first++, d_first++) {
         *d_first = *first;
     }
 }
 
 template <typename InContainer, typename OutContainer>
-void memCopy(InContainer& source, OutContainer& dest) {
-    memCopy(source.begin(), source.end(), dest.begin());
+void copy(InContainer& source, OutContainer& dest) {
+    copy(source.begin(), source.end(), dest.begin());
 }
 
 template <typename InputIt, typename OutputIt>
-void memCopyBack(InputIt first, InputIt last, OutputIt d_last) {
+void copyBack(InputIt first, InputIt last, OutputIt d_last) {
     while (first != last) {
         *(--d_last) = *(--last);
     }
 }
 
 template <typename InContainer, typename OutContainer>
-void memCopyBack(InContainer& source, OutContainer& dest) {
-    memCopyBack(source.begin(), source.end(), dest.begin());
+void copyBack(InContainer& source, OutContainer& dest) {
+    copyBack(source.begin(), source.end(), dest.begin());
 }
 
 template <typename InputIt, typename OutputIt>
-void memMove(InputIt first, InputIt last, OutputIt d_first) {
+void move(InputIt first, InputIt last, OutputIt d_first) {
     if (d_first < first) {
-        memCopy(first, last, d_first);
+        copy(first, last, d_first);
     } else if (d_first > first) {
         auto d_last = d_first + (last - first);
-        memCopyBack(first, last, d_last);
+        copyBack(first, last, d_last);
     }
 }
 
 template <typename InContainer, typename OutContainer>
-void memMove(InContainer& source, OutContainer& dest) {
-    memMove(source.begin(), source.end(), dest.begin());
+void move(InContainer& source, OutContainer& dest) {
+    move(source.begin(), source.end(), dest.begin());
 }
 
-}  // namespace cor::mem
+}  // namespace forg::mem
 
 #endif  // !MEMORY_HPP

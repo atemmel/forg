@@ -5,7 +5,7 @@
 
 #include "memory.hpp"
 
-namespace cor {
+namespace forg {
 
 template <typename T>
 class Buffer {
@@ -21,7 +21,7 @@ public:
 
     constexpr Buffer(const T* source, usize size) : Buffer(size) {
         for (usize i = 0; i < size; i++) {
-            this->begin_ptr[i] = cor::isMovable(source[i]);
+            this->begin_ptr[i] = forg::isMovable(source[i]);
         }
     }
     constexpr Buffer(const Buffer& other)  // copy constructor
@@ -85,8 +85,8 @@ public:
     }
 
     constexpr void swap(Buffer& other) {
-        cor::swap(this->begin_ptr, other.begin_ptr);
-        cor::swap(this->end_ptr, other.end_ptr);
+        forg::swap(this->begin_ptr, other.begin_ptr);
+        forg::swap(this->end_ptr, other.end_ptr);
     }
 
     ~Buffer() {
@@ -104,6 +104,6 @@ private:
     T* end_ptr   = nullptr;
 };
 
-}  // namespace cor
+}  // namespace forg
 
 #endif  // !BUFFER_HPP

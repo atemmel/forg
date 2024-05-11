@@ -2,11 +2,11 @@
 
 #include <cmath>
 
-constexpr int cor::sign(long long num) {
+constexpr int forg::sign(long long num) {
     return num < 0 ? -1 : 1;
 }
 
-usize cor::pow(usize base, usize exponent) {
+usize forg::pow(usize base, usize exponent) {
     usize product = 1;
     if (exponent == 2) {
         product = base * base;
@@ -18,7 +18,7 @@ usize cor::pow(usize base, usize exponent) {
     return product;
 }
 
-std::map<usize, usize> cor::primefactorization(usize n) {
+std::map<usize, usize> forg::primefactorization(usize n) {
     std::map<usize, usize> pFacMap;
     while (n % 2 == 0) {
         if (pFacMap.find(2) != pFacMap.end()) {
@@ -50,19 +50,19 @@ std::map<usize, usize> cor::primefactorization(usize n) {
     return pFacMap;
 }
 
-usize cor::phiFunk(usize n) {
+usize forg::phiFunk(usize n) {
     auto factors  = primefactorization(n);
     usize product = 1;
     for (auto &e : factors) {
-        product *= cor::pow(e.first, e.second - 1) * (e.first - 1);
+        product *= forg::pow(e.first, e.second - 1) * (e.first - 1);
     }
 
     return product;
 }
 
-cor::Array2D cor::identityMatrix(usize N) {
-    cor::Array<float> col(N, 0);
-    cor::Array2D newMatrix(N, col);
+forg::Array2D forg::identityMatrix(usize N) {
+    forg::Array<float> col(N, 0);
+    forg::Array2D newMatrix(N, col);
 
     for (usize row = 0; row < newMatrix.size(); row++) {
         for (usize col = 0; col < newMatrix.size(); col++) {
@@ -74,8 +74,8 @@ cor::Array2D cor::identityMatrix(usize N) {
     return newMatrix;
 }
 
-cor::Array2D cor::matrixAdd2D(Array2D &first, Array2D &second) {
-    cor::Array2D newMatrix(first.size());
+forg::Array2D forg::matrixAdd2D(Array2D &first, Array2D &second) {
+    forg::Array2D newMatrix(first.size());
     for (usize row = 0; row < first.size(); row++) {
         for (usize col = 0; col < first[row].size(); col++) {
             newMatrix[row].pushBack(first[row][col] + second[row][col]);
@@ -84,8 +84,8 @@ cor::Array2D cor::matrixAdd2D(Array2D &first, Array2D &second) {
     return newMatrix;
 }
 
-cor::Array2D cor::matrixSub2D(Array2D &first, Array2D &second) {
-    cor::Array2D newMatrix(first.size());
+forg::Array2D forg::matrixSub2D(Array2D &first, Array2D &second) {
+    forg::Array2D newMatrix(first.size());
     for (usize row = 0; row < first.size(); row++) {
         for (usize col = 0; col < first[row].size(); col++) {
             newMatrix[row].pushBack(first[row][col] - second[row][col]);
@@ -94,8 +94,8 @@ cor::Array2D cor::matrixSub2D(Array2D &first, Array2D &second) {
     return newMatrix;
 }
 
-cor::Array2D cor::matrixScalar2D(Array2D &first, int scalar) {
-    cor::Array2D newMatrix(first.size());
+forg::Array2D forg::matrixScalar2D(Array2D &first, int scalar) {
+    forg::Array2D newMatrix(first.size());
     for (usize row = 0; row < first.size(); row++) {
         for (usize col = 0; col < first[row].size(); col++) {
             newMatrix[row].pushBack(scalar * first[row][col]);
@@ -104,8 +104,8 @@ cor::Array2D cor::matrixScalar2D(Array2D &first, int scalar) {
     return newMatrix;
 }
 
-cor::Array2D cor::matrixMultip2D(Array2D &first, Array2D &second) {
-    cor::Array2D newMatrix(first.size());
+forg::Array2D forg::matrixMultip2D(Array2D &first, Array2D &second) {
+    forg::Array2D newMatrix(first.size());
     int sum = 0;
     for (usize row = 0; row < first.size(); row++) {
         for (usize col = 0; col < second[row].size(); col++) {
@@ -119,8 +119,8 @@ cor::Array2D cor::matrixMultip2D(Array2D &first, Array2D &second) {
     return newMatrix;
 }
 
-cor::Array2D cor::matrixTransp2D(Array2D &first) {
-    cor::Array2D newMatrix(first[0].size());
+forg::Array2D forg::matrixTransp2D(Array2D &first) {
+    forg::Array2D newMatrix(first[0].size());
     for (usize row = 0; row < first.size(); row++) {
         for (usize col = 0; col < first[row].size(); col++) {
             newMatrix[col].pushBack(first[row][col]);
@@ -129,8 +129,8 @@ cor::Array2D cor::matrixTransp2D(Array2D &first) {
     return newMatrix;
 }
 
-cor::Array2D cor::matrixinvers2D(Array2D &matrix) {
-    cor::Array2D newMatrix;
+forg::Array2D forg::matrixinvers2D(Array2D &matrix) {
+    forg::Array2D newMatrix;
     // needs to be general for all matricies
     if (Det2x2(matrix) != 0) {
         newMatrix.resize(matrix.size());
@@ -166,11 +166,11 @@ cor::Array2D cor::matrixinvers2D(Array2D &matrix) {
     return newMatrix;
 }
 
-int cor::Det2x2(Array2D &mat) {
+int forg::Det2x2(Array2D &mat) {
     return mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
 }
 
-int cor::Det3x3(Array2D &mat) {
+int forg::Det3x3(Array2D &mat) {
     return mat[0][0] * mat[1][1] * mat[2][2] +
            mat[0][1] * mat[1][2] * mat[2][0] +
            mat[0][2] * mat[1][0] * mat[2][1] -

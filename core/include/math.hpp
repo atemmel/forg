@@ -8,7 +8,7 @@
 #include "array.hpp"
 #include "types.hpp"
 
-namespace cor {
+namespace forg {
 
 template <typename T>
 constexpr T abs(T value) {
@@ -42,7 +42,7 @@ usize lcm(const T num1, const T num2, Args... nums) {
         }
     }
     for (auto& e : newFactors) {
-        product *= cor::pow(e.first, e.second);
+        product *= forg::pow(e.first, e.second);
     }
 
     return product;
@@ -65,7 +65,7 @@ usize lcm(const T num1, const T num2, Args... nums) {
 template <class>
 class Array;
 
-using Array2D = cor::Array<cor::Array<float>>;
+using Array2D = forg::Array<forg::Array<float>>;
 
 Array2D identityMatrix(usize N);
 
@@ -86,6 +86,6 @@ int Det3x3(Array2D& first);
 
 // Array2D matrixDet2D(Array2D& first);
 
-}  // namespace cor
+}  // namespace forg
 
 #endif  // !MATH_HPP

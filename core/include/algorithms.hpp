@@ -3,7 +3,7 @@
 
 #include "range.hpp"
 
-namespace cor {
+namespace forg {
 
 template <typename InIt, typename OutIt, typename Func>
 inline OutIt transform(const InIt first, const InIt last, OutIt dest,
@@ -34,7 +34,7 @@ bool cycleDetect(const T list) {
 }
 
 template <class T>
-T& search(cor::Slice<T> slice, T value) {
+T& search(forg::Slice<T> slice, T value) {
     for (auto It = slice.begin(); It != slice.end(); It++) {
         if (*It == value) {
             return *It;
@@ -47,6 +47,6 @@ usize strlen(const char* str);
 
 int strcmp(const char* lhs, const char* rhs);
 
-}  // namespace cor
+}  // namespace forg
 
 #endif  // !ALGORITHMS_HPP

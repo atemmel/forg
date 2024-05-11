@@ -3,7 +3,7 @@
 
 #include "type_traits.hpp"
 
-namespace cor {
+namespace forg {
 
 template <class T>
 constexpr const T& max_of(const T& a, const T& b) {
@@ -11,17 +11,17 @@ constexpr const T& max_of(const T& a, const T& b) {
 }
 
 template <typename T>
-constexpr cor::RemoveReference_T<T>&& isMovable(T&& t) noexcept {
-    return static_cast<cor::RemoveReference_T<T>&&>(t);
+constexpr forg::RemoveReference_T<T>&& isMovable(T&& t) noexcept {
+    return static_cast<forg::RemoveReference_T<T>&&>(t);
 }
 
 template <typename T>
-constexpr T&& forward(cor::RemoveReference_T<T>&& t) noexcept {
+constexpr T&& forward(forg::RemoveReference_T<T>&& t) noexcept {
     return static_cast<T&&>(t);
 }
 
 template <class T>
-constexpr T&& forward(cor::RemoveReference_T<T>& t) noexcept {
+constexpr T&& forward(forg::RemoveReference_T<T>& t) noexcept {
     return static_cast<T&&>(t);
 }
 
@@ -41,7 +41,7 @@ constexpr void swap(T& first, T& second) noexcept {
 
 template <typename Iter>
 constexpr void iterSwap(Iter first, Iter second) {
-    cor::moveSwap(*first, *second);
+    forg::moveSwap(*first, *second);
 }
 
 template <class T, size_t N>
@@ -59,6 +59,6 @@ constexpr T exchange(T& obj, U&& new_value) {
     return old_val;
 }
 
-}  // namespace cor
+}  // namespace forg
 
 #endif  // !UTILITY_HPP

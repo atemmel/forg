@@ -3,7 +3,7 @@
 
 #include "types.hpp"
 
-namespace cor {
+namespace forg {
 
 template <typename T>
 struct RemoveReference {
@@ -103,6 +103,6 @@ struct IsArray<T[N]> : TrueType {};
 template <class T>
 inline constexpr bool IsArray_T = IsArray<T>::value;
 
-}  // namespace cor
+}  // namespace forg
 
 #endif  // !TYPE_TRAITS_HPP

@@ -4,7 +4,7 @@
 #include "buffer.hpp"
 #include "range.hpp"
 
-namespace cor {
+namespace forg {
 
 template <typename T>
 class Array {
@@ -106,7 +106,7 @@ public:
         if (this->size() == this->capacity()) {
             expand();
         }
-        buffer[currentSize++] = cor::isMovable(value);
+        buffer[currentSize++] = forg::isMovable(value);
     }
     constexpr void popBack() {
         --currentSize;
@@ -117,7 +117,7 @@ public:
         auto count = newSize < this->size() ? newSize : this->size();
 
         for (usize i = 0; i < count; i++) {
-            newArr[i] = cor::isMovable(buffer[i]);
+            newArr[i] = forg::isMovable(buffer[i]);
         }
 
         this->swap(newArr);
@@ -151,7 +151,7 @@ public:
 
     constexpr void swap(Array& other) {
         this->buffer.swap(other.buffer);
-        cor::swap(this->currentSize, other.currentSize);
+        forg::swap(this->currentSize, other.currentSize);
     }
 
 private:
@@ -177,6 +177,6 @@ private:
     usize currentSize = 0;
 };
 
-}  // namespace cor
+}  // namespace forg
 
 #endif  // !ARRAY_HPP
