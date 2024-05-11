@@ -168,10 +168,22 @@ func linkTarget(compileCtx *compileCtx) error {
 		"g++",
 		"-o",
 		compileCtx.target.OutputPath,
-		"-lforg",
-		"-lraylib",
 	}
 	args = append(args, glob...)
+	args = append(args, "-L/usr/local/lib")
 	args = append(args, "-lforg", "-lraylib")
+
+	linkers := []string{
+		"mold",
+		"lld",
+	}
+
+	for _, ld := range linkers {
+		if util.InPath(ld) {
+			args = append(args, "-fuse-ld="+ld)
+			break
+		}
+	}
+
 	return util.Run(args)
 }

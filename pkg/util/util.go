@@ -18,3 +18,8 @@ func Either(a, b string) string {
 	}
 	return a
 }
+
+func InPath(cmd string) bool {
+	_, err := exec.LookPath(cmd)
+	return err == nil
+}
