@@ -168,7 +168,10 @@ func linkTarget(compileCtx *compileCtx) error {
 		"g++",
 		"-o",
 		compileCtx.target.OutputPath,
+		"-lforg",
 		"-lraylib",
 	}
-	return util.Run(append(args, glob...))
+	args = append(args, glob...)
+	args = append(args, "-lforg", "-lraylib")
+	return util.Run(args)
 }

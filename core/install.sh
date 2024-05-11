@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 shopt -s globstar
 
@@ -12,7 +12,11 @@ for f in $SRC; do
 done
 
 ar rcs build/libforg.a build/*.o || exit 3
+# g++ -shared -o libforg.so build/*.o || exit 3
 
-(sudo install build/libforg.a /usr/lib/) || exit 3
-(sudo install -d /usr/include/forg/) || exit 3
-(sudo install include/*.hpp /usr/include/forg/) || exit 3
+# for release builds
+(sudo install build/libforg.a /usr/local/lib/) || exit 3
+# for development(?)
+# (sudo install build/libforg.so /usr/local/lib/) || exit 3
+(sudo install -d /usr/local/include/forg/) || exit 3
+(sudo install include/*.hpp /usr/local/include/forg/) || exit 3
