@@ -14,7 +14,7 @@ private:
         Node(T data) : data(data) {
         }
 
-        int data;
+        T data;
         forg::UniquePtr<Node> next = nullptr;
     };
 
