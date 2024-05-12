@@ -50,9 +50,7 @@ public:
 
     // CAP
     constexpr usize size() const noexcept;
-    constexpr bool empty() const noexcept {
-        return size() == 0;
-    }
+    constexpr bool empty() const noexcept;
 
     // MODIFIERS
     constexpr void swap(String& other) noexcept;

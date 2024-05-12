@@ -104,6 +104,10 @@ constexpr usize forg::String::size() const noexcept {
     return this->ssize;
 }
 
+constexpr bool forg::String::empty() const noexcept {
+    return size() == 0;
+}
+
 forg::String::const_pointer forg::String::data() const noexcept {
     return this->ptr;
 }

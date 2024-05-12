@@ -1,6 +1,6 @@
-#include "defer.hpp"
-
 #include <catch2/catch_all.hpp>
+
+#include "core.hpp"
 
 TEST_CASE("defer test") {
     int i = 0;

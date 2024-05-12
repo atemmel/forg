@@ -1,6 +1,8 @@
 #ifndef HASH_TABLE_HPP
 #define HASH_TABLE_HPP
 
+#include <cmath>
+
 #include "array.hpp"
 #include "hash.hpp"
 #include "uniquePtr.hpp"
