@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include <forg/string.hpp>
+#include <forg/core.hpp>
 #include <iostream>
 #include <raylib.h>
 
