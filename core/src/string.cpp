@@ -1,6 +1,7 @@
 #include "string.hpp"
 
 #include "algorithms.hpp"
+#include "print.hpp"
 
 forg::String::String(usize count, char chr) : ssize(count) {
     this->ptr = allocator.createN(this->ssize + 1);
@@ -131,6 +132,10 @@ constexpr void forg::String::swap(String& other) noexcept {
 
 forg::String::~String() {
     allocator.deallocate(this->ptr);
+}
+
+auto forg::fprintType(forg::File* file, const String& str) -> void {
+    fprintType(file, str.data());
 }
 
 bool forg::operator==(const forg::String& lhs,

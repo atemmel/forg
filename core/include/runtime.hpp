@@ -2,7 +2,7 @@
 
 #include "types.hpp"
 
-namespace runtime {
+namespace forg {
 
 auto dumpStackTrace(char *buf, usize size) -> void;
 

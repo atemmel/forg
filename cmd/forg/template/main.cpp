@@ -1,8 +1,8 @@
 #include <cstdlib>
 #include <forg/core.hpp>
-#include <forg/defer.hpp>
-#include <iostream>
 #include <raylib.h>
+
+using namespace forg;
 
 auto main() -> int {
   SetTraceLogLevel(LOG_ERROR);
@@ -10,8 +10,7 @@ auto main() -> int {
   defer(CloseWindow());
   SetTargetFPS(60);
 
-  forg::String str = "Hello";
-  std::cout << str.data() << '\n';
+  println("Starting...");
 
   while (!WindowShouldClose()) {
     if (IsKeyPressed(KEY_ESCAPE)) {

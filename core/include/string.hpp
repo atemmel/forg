@@ -4,6 +4,7 @@
 #include <initializer_list>
 
 #include "memory.hpp"
+#include "print.hpp"
 #include "range.hpp"
 
 namespace forg {
@@ -62,6 +63,8 @@ private:
     usize ssize = 0;
     pointer ptr = nullptr;
 };
+
+auto fprintType(File* file, const String& str) -> void;
 
 bool operator==(const forg::String& lhs, const forg::String& rhs) noexcept;
 bool operator!=(const forg::String& lhs, const forg::String& rhs) noexcept;

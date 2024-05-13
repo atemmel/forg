@@ -24,7 +24,7 @@ constexpr static int DISCARD_POST = 6;
 constexpr static int DISCARD_POST = 2;
 #endif
 
-namespace runtime {
+namespace forg {
 
 static auto concatStr(const char *str, char *dest, const char *destEnd)
     -> char * {
@@ -133,4 +133,4 @@ auto dumpStackTrace(char *buf, usize size) -> void {
 #endif
 }
 
-}  // namespace runtime
+}  // namespace forg

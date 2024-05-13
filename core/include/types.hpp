@@ -1,9 +1,6 @@
-#ifndef TYPES_HPP
-#define TYPES_HPP
+#pragma once
 
 #include <cstddef>
 
-using usize = std::size_t;
+using usize    = std::size_t;
 using NullType = std::nullptr_t;
-
-#endif  // !TYPES_HPP
