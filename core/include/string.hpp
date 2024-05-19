@@ -1,10 +1,9 @@
-#ifndef STRING_HPP
-#define STRING_HPP
+#pragma once
 
 #include <initializer_list>
 
+#include "file.hpp"
 #include "memory.hpp"
-#include "print.hpp"
 #include "range.hpp"
 
 namespace forg {
@@ -71,5 +70,3 @@ bool operator!=(const forg::String& lhs, const forg::String& rhs) noexcept;
 bool operator==(const forg::String& lhs, const char* rhs) noexcept;
 bool operator!=(const forg::String& lhs, const char* rhs) noexcept;
 }  // namespace forg
-
-#endif  // !STRING_HPP

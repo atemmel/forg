@@ -29,13 +29,15 @@ public:
         deleter = forg::forward<Deleter>(other.getDeleter());
     }
 
+    template <typename U, typename E>
+    UniquePtr(UniquePtr<U, E>&& u) noexcept : pointer(u.release()) {
+    }
+
     // assigns
     UniquePtr& operator=(UniquePtr&& other) noexcept {
-        {
-            this->reset(other.release());
-            deleter = forg::forward<Deleter>(other.getDeleter());
-            return *this;
-        }
+        this->reset(other.release());
+        deleter = forg::forward<Deleter>(other.getDeleter());
+        return *this;
     }
     UniquePtr& operator=(NullType) noexcept {
         this->reset();
@@ -78,10 +80,18 @@ public:
     }
 
     // dereferences pointer to the managed object
-    Pointer operator->() const noexcept {
-        return pointer;
+    const Elem_t& operator->() const noexcept {
+        return *get();
     }
-    Elem_t operator*() const noexcept {
+    const Elem_t& operator*() const noexcept {
+        return *get();
+    }
+
+    // dereferences pointer to the managed object
+    Elem_t& operator->() noexcept {
+        return *get();
+    }
+    Elem_t& operator*() noexcept {
         return *get();
     }
 
@@ -171,8 +181,8 @@ public:
     }
 
     // dereferences pointer to the managed object
-    Pointer operator->() const noexcept {
-        return pointer;
+    Elem_t operator->() const noexcept {
+        return *get();
     }
     Elem_t operator*() const noexcept {
         return *get();

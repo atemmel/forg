@@ -75,7 +75,7 @@ public:
         return currentSize;
     }
     constexpr bool empty() {
-        return currentSize == 0 ? true : false;
+        return currentSize == 0;
     }
     constexpr usize capacity() {
         return buffer.size();

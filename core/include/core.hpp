@@ -16,6 +16,7 @@
 #include "runtime.hpp"
 #include "safety.hpp"
 #include "slice.hpp"
+#include "state.hpp"
 #include "static_array.hpp"
 #include "string.hpp"
 #include "types.hpp"

@@ -1,8 +1,6 @@
-#ifndef MEMORY_HPP
-#define MEMORY_HPP
+#pragma once
 
 #include <new>
-#include <type_traits>
 
 #include "type_traits.hpp"
 #include "types.hpp"
@@ -210,5 +208,3 @@ void move(InContainer& source, OutContainer& dest) {
 }
 
 }  // namespace forg::mem
-
-#endif  // !MEMORY_HPP
