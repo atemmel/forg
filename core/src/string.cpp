@@ -3,6 +3,8 @@
 #include "algorithms.hpp"
 #include "print.hpp"
 
+using namespace forg;
+
 forg::String::String(usize count, char chr) : ssize(count) {
     this->ptr = allocator.createN(this->ssize + 1);
     usize i   = 0;

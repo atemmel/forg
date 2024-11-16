@@ -20,9 +20,9 @@ usize pow(usize base, usize exponent) {
     return product;
 }
 
-forg::Array2D forg::identityMatrix(usize N) {
-    forg::Array<float> col(N, 0);
-    forg::Array2D newMatrix(N, col);
+Array2D identityMatrix(usize N) {
+    Array<float> col(N, 0);
+    Array2D newMatrix(N, col);
 
     for (usize row = 0; row < newMatrix.size(); row++) {
         for (usize col = 0; col < newMatrix.size(); col++) {
@@ -34,8 +34,8 @@ forg::Array2D forg::identityMatrix(usize N) {
     return newMatrix;
 }
 
-forg::Array2D forg::matrixAdd2D(Array2D &first, Array2D &second) {
-    forg::Array2D newMatrix(first.size());
+Array2D matrixAdd2D(Array2D &first, Array2D &second) {
+    Array2D newMatrix(first.size());
     for (usize row = 0; row < first.size(); row++) {
         for (usize col = 0; col < first[row].size(); col++) {
             newMatrix[row].pushBack(first[row][col] + second[row][col]);
@@ -44,8 +44,8 @@ forg::Array2D forg::matrixAdd2D(Array2D &first, Array2D &second) {
     return newMatrix;
 }
 
-forg::Array2D forg::matrixSub2D(Array2D &first, Array2D &second) {
-    forg::Array2D newMatrix(first.size());
+Array2D matrixSub2D(Array2D &first, Array2D &second) {
+    Array2D newMatrix(first.size());
     for (usize row = 0; row < first.size(); row++) {
         for (usize col = 0; col < first[row].size(); col++) {
             newMatrix[row].pushBack(first[row][col] - second[row][col]);
@@ -54,8 +54,8 @@ forg::Array2D forg::matrixSub2D(Array2D &first, Array2D &second) {
     return newMatrix;
 }
 
-forg::Array2D forg::matrixScalar2D(Array2D &first, int scalar) {
-    forg::Array2D newMatrix(first.size());
+Array2D matrixScalar2D(Array2D &first, int scalar) {
+    Array2D newMatrix(first.size());
     for (usize row = 0; row < first.size(); row++) {
         for (usize col = 0; col < first[row].size(); col++) {
             newMatrix[row].pushBack(scalar * first[row][col]);
@@ -64,8 +64,8 @@ forg::Array2D forg::matrixScalar2D(Array2D &first, int scalar) {
     return newMatrix;
 }
 
-forg::Array2D forg::matrixMultip2D(Array2D &first, Array2D &second) {
-    forg::Array2D newMatrix(first.size());
+Array2D matrixMultip2D(Array2D &first, Array2D &second) {
+    Array2D newMatrix(first.size());
     int sum = 0;
     for (usize row = 0; row < first.size(); row++) {
         for (usize col = 0; col < second[row].size(); col++) {
@@ -79,8 +79,8 @@ forg::Array2D forg::matrixMultip2D(Array2D &first, Array2D &second) {
     return newMatrix;
 }
 
-forg::Array2D forg::matrixTransp2D(Array2D &first) {
-    forg::Array2D newMatrix(first[0].size());
+Array2D matrixTransp2D(Array2D &first) {
+    Array2D newMatrix(first[0].size());
     for (usize row = 0; row < first.size(); row++) {
         for (usize col = 0; col < first[row].size(); col++) {
             newMatrix[col].pushBack(first[row][col]);
@@ -89,8 +89,8 @@ forg::Array2D forg::matrixTransp2D(Array2D &first) {
     return newMatrix;
 }
 
-forg::Array2D forg::matrixinvers2D(Array2D &matrix) {
-    forg::Array2D newMatrix;
+Array2D matrixinvers2D(Array2D &matrix) {
+    Array2D newMatrix;
     // needs to be general for all matricies
     if (Det2x2(matrix) != 0) {
         newMatrix.resize(matrix.size());
@@ -126,11 +126,11 @@ forg::Array2D forg::matrixinvers2D(Array2D &matrix) {
     return newMatrix;
 }
 
-int forg::Det2x2(Array2D &mat) {
+int Det2x2(Array2D &mat) {
     return mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
 }
 
-int forg::Det3x3(Array2D &mat) {
+int Det3x3(Array2D &mat) {
     return mat[0][0] * mat[1][1] * mat[2][2] +
            mat[0][1] * mat[1][2] * mat[2][0] +
            mat[0][2] * mat[1][0] * mat[2][1] -

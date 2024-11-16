@@ -2,9 +2,8 @@
 
 #include <initializer_list>
 
-#include "file.hpp"
 #include "memory.hpp"
-#include "range.hpp"
+#include "slice.hpp"
 #include "types.hpp"
 
 namespace forg {

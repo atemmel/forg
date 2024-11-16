@@ -1,6 +1,6 @@
 #pragma once
 
-#include "range.hpp"
+#include "slice.hpp"
 #include "types.hpp"
 
 namespace forg {

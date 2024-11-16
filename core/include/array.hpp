@@ -2,7 +2,7 @@
 #define ARRAY_HPP
 
 #include "buffer.hpp"
-#include "range.hpp"
+#include "slice.hpp"
 
 namespace forg {
 
