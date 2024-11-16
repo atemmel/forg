@@ -1,8 +1,9 @@
 #pragma once
 
-#include "safety.hpp"
 #include "slice.hpp"
 #include "types.hpp"
+
+namespace forg {
 
 template <typename T, usize I>
 class StaticArray {
@@ -50,3 +51,5 @@ public:
 private:
     T carray[I];
 };
+
+}  // namespace forg

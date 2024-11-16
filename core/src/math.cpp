@@ -2,11 +2,13 @@
 
 #include <cmath>
 
-constexpr int forg::sign(long long num) {
+namespace forg {
+
+constexpr int sign(long long num) {
     return num < 0 ? -1 : 1;
 }
 
-usize forg::pow(usize base, usize exponent) {
+usize pow(usize base, usize exponent) {
     usize product = 1;
     if (exponent == 2) {
         product = base * base;
@@ -15,48 +17,6 @@ usize forg::pow(usize base, usize exponent) {
             product *= base;
         }
     }
-    return product;
-}
-
-std::map<usize, usize> forg::primefactorization(usize n) {
-    std::map<usize, usize> pFacMap;
-    while (n % 2 == 0) {
-        if (pFacMap.find(2) != pFacMap.end()) {
-            pFacMap[2]++;
-        } else {
-            pFacMap.insert({2, 1});
-        }
-        n = n / 2;
-    }
-
-    for (usize i = 3; i <= sqrt(n); i++) {
-        while (n % i == 0) {
-            if (pFacMap.find(i) != pFacMap.end()) {
-                pFacMap[i]++;
-            } else {
-                pFacMap.insert({i, 1});
-            }
-            n = n / i;
-        }
-    }
-
-    if (n > 2) {
-        if (pFacMap.find(n) != pFacMap.end()) {
-            pFacMap[n]++;
-        } else {
-            pFacMap.insert({n, 1});
-        }
-    }
-    return pFacMap;
-}
-
-usize forg::phiFunk(usize n) {
-    auto factors  = primefactorization(n);
-    usize product = 1;
-    for (auto &e : factors) {
-        product *= forg::pow(e.first, e.second - 1) * (e.first - 1);
-    }
-
     return product;
 }
 
@@ -178,3 +138,5 @@ int forg::Det3x3(Array2D &mat) {
            mat[0][1] * mat[1][0] * mat[2][2] -
            mat[0][0] * mat[1][2] * mat[2][1];
 }
+
+}  // namespace forg

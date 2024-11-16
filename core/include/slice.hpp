@@ -3,6 +3,8 @@
 #include "safety.hpp"
 #include "types.hpp"
 
+namespace forg {
+
 template <typename T>
 class Slice {
 public:
@@ -53,3 +55,5 @@ private:
     T* ptr;
     usize length;
 };
+
+};  // namespace forg

@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "file.hpp"
 #include "string.hpp"
 #include "types.hpp"
 #include "utility.hpp"
@@ -21,6 +20,7 @@ auto fprintType(File* file, int value) -> void;
 auto fprintType(File* file, int64_t value) -> void;
 auto fprintType(File* file, unsigned char value) -> void;
 auto fprintType(File* file, usize value) -> void;
+auto fprintType(File* file, const String& value) -> void;
 
 auto fprint(File* file) -> void;
 

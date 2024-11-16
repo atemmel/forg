@@ -1,11 +1,12 @@
-#ifndef HASH_TABLE_HPP
-#define HASH_TABLE_HPP
+#pragma once
 
 #include <cmath>
 
 #include "array.hpp"
 #include "hash.hpp"
 #include "uniquePtr.hpp"
+
+namespace forg {
 
 template <typename T>
 class HashTable {
@@ -189,4 +190,4 @@ public:
     }
 };
 
-#endif  // !HASH_TABLE_HPP
+}  // namespace forg

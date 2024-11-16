@@ -1,5 +1,4 @@
-#ifndef RANGE_HPP
-#define RANGE_HPP
+#pragma once
 
 #include "types.hpp"
 
@@ -113,4 +112,3 @@ private:
 };
 
 }  // namespace forg
-#endif  // !RANGE_HPP

@@ -5,6 +5,7 @@
 #include "file.hpp"
 #include "memory.hpp"
 #include "range.hpp"
+#include "types.hpp"
 
 namespace forg {
 
