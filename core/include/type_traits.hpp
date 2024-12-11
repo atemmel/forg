@@ -103,6 +103,21 @@ struct IsArray<T[N]> : TrueType {};
 template <class T>
 inline constexpr bool IsArray_T = IsArray<T>::value;
 
+template <bool B, class T, class F>
+struct conditional {
+    using type = T;
+};
+
+template <class T, class F>
+struct conditional<false, T, F> {
+    using type = F;
+};
+
+template <class T>
+struct is_const : FalseType {};
+template <class T>
+struct is_const<const T> : TrueType {};
+
 }  // namespace forg
 
 #endif  // !TYPE_TRAITS_HPP

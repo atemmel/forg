@@ -6,9 +6,9 @@ struct DummyState : public forg::State {
     auto update() -> bool {
         return false;
     }
-    auto draw() -> void{};
+    auto draw() -> void {};
 };
 
 TEST_CASE("state test") {
-    forg::state::run<DummyState>("Test window");
+    forg::state::run<DummyState>("Test window", 400, 400);
 }

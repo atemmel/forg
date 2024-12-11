@@ -59,7 +59,7 @@ auto change(State* state) -> void {
 }
 
 auto push(State* state) -> void {
-    states.pushBack(state);
+    states.append(state);
 }
 
 auto pop() -> void {

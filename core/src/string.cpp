@@ -127,6 +127,14 @@ forg::Slice<char> forg::String::slice() {
     return Slice<char>(this->begin(), this->end());
 }
 
+forg::View<char> forg::String::view(usize first, usize last) const {
+    return View<char>(this->begin() + first, this->begin() + last);
+}
+
+forg::View<char> forg::String::view() const {
+    return View<char>(this->begin(), this->end());
+}
+
 constexpr void forg::String::swap(String& other) noexcept {
     forg::swap(this->ssize, other.ssize);
     forg::swap(this->ptr, other.ptr);
