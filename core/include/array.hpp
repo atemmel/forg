@@ -113,6 +113,15 @@ public:
         }
     }
 
+    constexpr void append(const View<T>& view) {
+        while (this->size() + view.size() >= this->capacity()) {
+            expand();
+        }
+        for (auto p : view) {
+            buffer[currentSize++] = p;
+        }
+    }
+
     constexpr void append(T&& value) {
         if (this->size() == this->capacity()) {
             expand();

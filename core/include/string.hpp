@@ -72,7 +72,6 @@ private:
     static auto fmt(Array<char>& bytes, const Param& param,
                     Params... params) -> String {
         bytes.append(representation(param));
-        bytes.append(' ');
         return fmt(bytes, forward<Params>(params)...);
     }
 

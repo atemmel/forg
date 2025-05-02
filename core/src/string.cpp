@@ -34,6 +34,12 @@ forg::String::String(std::initializer_list<char> ilist)
     : String(ilist.begin(), ilist.size()) {
 }
 
+forg::String::String(Slice<char> slice) : String(slice.begin(), slice.size()) {
+}
+
+forg::String::String(View<char> view) : String(view.begin(), view.size()) {
+}
+
 forg::String& forg::String::operator=(const String& str) {
     if (*this != str) {
         auto temp(str);
