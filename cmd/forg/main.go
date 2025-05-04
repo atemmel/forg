@@ -60,19 +60,23 @@ func initCmd(ctx *cli.Context) error {
 }
 
 func buildCmd(ctx *cli.Context) error {
-	t, err := compile.NewTarget(workingDirectory)
+	workingDirectory = util.Either(ctx.String("path"), workingDirectory)
+	o, err := compile.NewOpts(workingDirectory)
+	o.Target = ctx.String("target")
 	log.AssertErr(err)
-	log.AssertErr(compile.Compile(t))
+	log.AssertErr(compile.Compile(o))
 	return nil
 }
 
 func runCmd(ctx *cli.Context) error {
-	t, err := compile.NewTarget(workingDirectory)
+	workingDirectory = util.Either(ctx.String("path"), workingDirectory)
+	o, err := compile.NewOpts(workingDirectory)
+	o.Target = ctx.String("target")
 	log.AssertErr(err)
-	log.AssertErr(compile.Compile(t))
+	log.AssertErr(compile.Compile(o))
 
 	log.AssertErr(util.Run([]string{
-		t.OutputPath,
+		o.OutputPath,
 	}))
 	return nil
 }
@@ -108,21 +112,15 @@ func main() {
 				Aliases: []string{"p"},
 				Usage:   "set path to project to operate on",
 			},
+			&cli.StringFlag{
+				Name:    "target",
+				Aliases: []string{"t"},
+				Usage:   "set build target (native|windows)",
+			},
 		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
 		oglog.Fatal(err)
 	}
-
-	/*
-		switch op {
-		case "init":
-			initCmd()
-		case "build":
-			buildCmd()
-		case "run":
-			runCmd()
-		}
-	*/
 }
