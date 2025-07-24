@@ -3,15 +3,20 @@ package main
 import (
 	"embed"
 	"flag"
+	"fmt"
 	"forg/pkg/compile"
 	"forg/pkg/log"
 	"forg/pkg/util"
+	oglog "log"
 	"os"
 	"path/filepath"
+
+	"github.com/urfave/cli/v2" // imports as package "cli"
 )
 
 var (
 	workingDirectory = "."
+	wantsHelp        = false
 
 	//go:embed template/*
 	templateProject embed.FS
@@ -19,6 +24,7 @@ var (
 
 func init() {
 	flag.StringVar(&workingDirectory, "p", ".", "Set path to project to operate on")
+	flag.BoolVar(&wantsHelp, "h", false, "Show this help text")
 	flag.Parse()
 	if workingDirectory == "." {
 		var err error
@@ -74,18 +80,53 @@ func runCmd() {
 }
 
 func main() {
-	op := flag.Arg(0)
-	if op == "" {
-		log.Stderr("No operation specified...\n")
+
+	app := &cli.App{
+		Name:  "forg",
+		Usage: "game dev toolkit",
+		Action: func(*cli.Context) error {
+			fmt.Println("boom! I say!")
+			return nil
+		},
+		Commands: []*cli.Command{
+			{
+				Name:    "append",
+				Aliases: []string{"a"},
+				Usage:   "add a task to the list",
+				Action: func(cCtx *cli.Context) error {
+					fmt.Println("added task: ", cCtx.Args().First())
+					return nil
+				},
+			},
+		},
 	}
 
-	switch op {
-	case "init":
-		workingDirectory = util.Either(flag.Arg(1), workingDirectory)
-		initCmd()
-	case "build":
-		buildCmd()
-	case "run":
-		runCmd()
+	cli.AppHelpTemplate = "forg\n\n" + cli.AppHelpTemplate
+
+	if err := app.Run(os.Args); err != nil {
+		oglog.Fatal(err)
 	}
+
+	/*
+		op := flag.Arg(0)
+
+		if wantsHelp {
+			flag.Usage()
+			return
+		}
+
+		if op == "" {
+			log.Stderr("No operation specified, use -h for help\n")
+		}
+
+		switch op {
+		case "init":
+			workingDirectory = util.Either(flag.Arg(1), workingDirectory)
+			initCmd()
+		case "build":
+			buildCmd()
+		case "run":
+			runCmd()
+		}
+	*/
 }
