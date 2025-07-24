@@ -1,62 +1,68 @@
 package watch
 
 import (
+	"fmt"
+	"io/fs"
 	"os"
+	"strings"
 	"time"
 )
 
 type Callback func(string) error
 
 type state struct {
-	files map[string]time.Time
-	fn    Callback
+	dir        fs.FS
+	extensions []string
+	files      map[string]time.Time
 }
 
-func Files(files []string, fn Callback, interval time.Duration) error {
-
+func Extensions(directory string, extensions []string, fn Callback, interval time.Duration) error {
 	state := &state{
-		files: map[string]time.Time{},
+		dir:        os.DirFS(directory),
+		extensions: extensions,
+		files:      map[string]time.Time{},
 	}
 
-	for _, file := range files {
-		info, err := os.Stat(file)
+	_ = poll(state, func(path string, d fs.DirEntry) error {
+		i, err := d.Info()
 		if err != nil {
-			return err
+			return nil
 		}
-		state.files[file] = info.ModTime()
-	}
+		state.files[path] = i.ModTime()
+		return nil
+	})
 
 	for {
+		_ = poll(state, func(p string, d fs.DirEntry) error {
+			i, err := d.Info()
+			if err != nil {
+				return nil
+			}
+			now := i.ModTime()
+			before := state.files[p]
 
-		err := poll(state)
-		if err != nil {
-			return err
-		}
+			if before.After(now) {
+				fmt.Println(p, "was changed")
+				state.files[p] = now
+				//TODO: consider if error should be handled or not
+				_ = fn(p)
+			}
+			return nil
+		})
 
 		time.Sleep(interval * time.Millisecond)
 	}
 }
 
-func poll(state *state) error {
-	for file, timestamp := range state.files {
-		info, err := os.Stat(file)
-		if err != nil {
-			if os.IsNotExist(err) {
-				delete(state.files, file)
-				continue
+func poll(state *state, callback func(string, fs.DirEntry) error) error {
+	return fs.WalkDir(state.dir, ".", func(path string, d fs.DirEntry, err error) error {
+		for _, ext := range state.extensions {
+			if strings.HasSuffix(d.Name(), ext) {
+				goto OK
 			}
-			return err
 		}
-
-		latest := info.ModTime()
-
-		if latest.After(timestamp) {
-			state.files[file] = latest
-
-			//TODO: consider if error should be handled or not
-			err := state.fn(file)
-			_ = err
-		}
-	}
-	return nil
+		return nil
+	OK:
+		return callback(path, d)
+	})
 }

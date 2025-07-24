@@ -5,10 +5,13 @@ import (
 	"forg/pkg/compile"
 	"forg/pkg/log"
 	"forg/pkg/util"
-	"github.com/urfave/cli/v2" // imports as package "cli"
+	"forg/pkg/watch"
 	oglog "log"
 	"os"
+	"os/exec"
 	"path/filepath"
+
+	"github.com/urfave/cli/v2" // imports as package "cli"
 )
 
 var (
@@ -65,16 +68,37 @@ func buildCmd(ctx *cli.Context) error {
 	return nil
 }
 
+var runningCmd *exec.Cmd
+
 func runCmd(ctx *cli.Context) error {
 	workingDirectory = util.Either(ctx.String("path"), workingDirectory)
+	run(ctx)
+	go func() {
+		err := runningCmd.Wait()
+		if err == nil {
+			os.Exit(0)
+		}
+	}()
+	return watch.Extensions(workingDirectory, []string{".cpp", ".hpp"}, func(s string) error {
+		return run(ctx)
+	}, 100)
+}
+
+func run(ctx *cli.Context) error {
 	o, err := compile.NewOpts(workingDirectory)
+	if err != nil {
+		return err
+	}
 	o.Target = ctx.String("target")
 	log.AssertErr(err)
 	log.AssertErr(compile.Compile(o))
-	log.AssertErr(util.Run([]string{
-		o.OutputPath,
-	}))
-	return nil
+	if runningCmd != nil {
+		_ = runningCmd.Process.Kill()
+	}
+	runningCmd = exec.Command(o.OutputPath)
+	runningCmd.Stdout = os.Stdout
+	runningCmd.Stderr = os.Stderr
+	return runningCmd.Start()
 }
 
 func main() {
