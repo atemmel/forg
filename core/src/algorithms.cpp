@@ -1,6 +1,6 @@
 #include "algorithms.hpp"
 
-usize forg::strlen(const char* str) {
+forg::usize forg::strlen(const char* str) {
     auto end = str;
     while (*end != '\0') {
         end++;

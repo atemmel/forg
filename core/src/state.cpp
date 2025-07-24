@@ -13,10 +13,10 @@ namespace state {
 static bool running = true;
 static Array<State*> states;
 
-auto init(const char* windowName) -> void {
+auto init(const char* windowName, int width, int height) -> void {
     assert(states.empty());
     SetTraceLogLevel(LOG_WARNING);
-    InitWindow(800, 450, windowName);
+    InitWindow(width, height, windowName);
     SetTargetFPS(60);
 }
 
@@ -59,7 +59,7 @@ auto change(State* state) -> void {
 }
 
 auto push(State* state) -> void {
-    states.pushBack(state);
+    states.append(state);
 }
 
 auto pop() -> void {

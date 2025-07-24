@@ -1,7 +1,7 @@
-#ifndef ALGORITHMS_HPP
-#define ALGORITHMS_HPP
+#pragma once
 
-#include "range.hpp"
+#include "slice.hpp"
+#include "types.hpp"
 
 namespace forg {
 
@@ -48,5 +48,3 @@ usize strlen(const char* str);
 int strcmp(const char* lhs, const char* rhs);
 
 }  // namespace forg
-
-#endif  // !ALGORITHMS_HPP

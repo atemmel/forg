@@ -90,7 +90,7 @@ func setup(t *testing.T) *Target {
 	}
 
 	target, err := NewTarget(dir)
-	log.Assert(err)
+	log.AssertErr(err)
 	return target
 }
 

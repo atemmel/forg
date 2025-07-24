@@ -9,9 +9,15 @@ func Stderr(str string, args ...any) {
 	fmt.Fprintf(os.Stderr, str, args...)
 }
 
-func Assert(err error) {
+func AssertErr(err error) {
 	if err != nil {
 		panic(err)
+	}
+}
+
+func Assert(condition bool) {
+	if !condition {
+		panic("Assertion failed")
 	}
 }
 

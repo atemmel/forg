@@ -1,8 +1,9 @@
 #pragma once
 
-#include "safety.hpp"
 #include "slice.hpp"
 #include "types.hpp"
+
+namespace forg {
 
 template <typename T, usize I>
 class StaticArray {
@@ -32,6 +33,10 @@ public:
         return &carray + size();
     }
 
+    constexpr auto data() -> T* {
+        return (T*)&carray;
+    }
+
     constexpr auto begin() const -> T const* {
         return &carray;
     }
@@ -44,9 +49,18 @@ public:
         assert(first <= size());
         assert(last <= size());
         assert(first <= last);
-        return Slice(begin() + first, begin() + last);
+        return Slice(data() + first, data() + last);
+    }
+
+    constexpr auto view(usize first, usize last) -> View<T> {
+        assert(first <= size());
+        assert(last <= size());
+        assert(first <= last);
+        return View(data() + first, data() + last);
     }
 
 private:
     T carray[I];
 };
+
+}  // namespace forg

@@ -3,6 +3,8 @@
 #include "algorithms.hpp"
 #include "print.hpp"
 
+using namespace forg;
+
 forg::String::String(usize count, char chr) : ssize(count) {
     this->ptr = allocator.createN(this->ssize + 1);
     usize i   = 0;
@@ -30,6 +32,12 @@ forg::String::String(String&& other) noexcept {
 
 forg::String::String(std::initializer_list<char> ilist)
     : String(ilist.begin(), ilist.size()) {
+}
+
+forg::String::String(Slice<char> slice) : String(slice.begin(), slice.size()) {
+}
+
+forg::String::String(View<char> view) : String(view.begin(), view.size()) {
 }
 
 forg::String& forg::String::operator=(const String& str) {
@@ -123,6 +131,14 @@ forg::Slice<char> forg::String::slice(usize first, usize last) {
 
 forg::Slice<char> forg::String::slice() {
     return Slice<char>(this->begin(), this->end());
+}
+
+forg::View<char> forg::String::view(usize first, usize last) const {
+    return View<char>(this->begin() + first, this->begin() + last);
+}
+
+forg::View<char> forg::String::view() const {
+    return View<char>(this->begin(), this->end());
 }
 
 constexpr void forg::String::swap(String& other) noexcept {

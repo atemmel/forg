@@ -2,11 +2,21 @@
 
 #include "safety.hpp"
 #include "types.hpp"
+#include "view.hpp"
+
+namespace forg {
 
 template <typename T>
 class Slice {
 public:
+    constexpr Slice(const T* ptr, usize length) : ptr(ptr), length(length) {
+    }
+
     constexpr Slice(T* ptr, usize length) : ptr(ptr), length(length) {
+    }
+
+    constexpr Slice(const T* first, const T* last)
+        : ptr(first), length(last - first) {
     }
 
     constexpr Slice(T* first, T* last) : ptr(first), length(last - first) {
@@ -49,7 +59,13 @@ public:
         return Slice(begin() + first, begin() + last);
     }
 
+    constexpr auto view(usize first, usize last) -> View<T> {
+        return View(ptr, length);
+    }
+
 private:
     T* ptr;
     usize length;
 };
+
+};  // namespace forg

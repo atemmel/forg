@@ -2,7 +2,7 @@
 #define ARRAY_HPP
 
 #include "buffer.hpp"
-#include "range.hpp"
+#include "slice.hpp"
 
 namespace forg {
 
@@ -96,21 +96,43 @@ public:
         }
         currentSize = 0;
     }
-    constexpr void pushBack(const T& value) {
+
+    constexpr void append(const T& value) {
         if (this->size() == this->capacity()) {
             expand();
         }
         buffer[currentSize++] = value;
     }
-    constexpr void pushBack(T&& value) {
+
+    constexpr void append(const Slice<T>& slice) {
+        while (this->size() + slice.size() >= this->capacity()) {
+            expand();
+        }
+        for (auto p : slice) {
+            buffer[currentSize++] = p;
+        }
+    }
+
+    constexpr void append(const View<T>& view) {
+        while (this->size() + view.size() >= this->capacity()) {
+            expand();
+        }
+        for (auto p : view) {
+            buffer[currentSize++] = p;
+        }
+    }
+
+    constexpr void append(T&& value) {
         if (this->size() == this->capacity()) {
             expand();
         }
         buffer[currentSize++] = forg::isMovable(value);
     }
+
     constexpr void popBack() {
         --currentSize;
     }
+
     constexpr void resize(usize newSize) {
         Array newArr(newSize);
 

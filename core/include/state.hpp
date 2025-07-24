@@ -15,7 +15,7 @@ struct State {
 
 namespace state {
 
-auto init(const char* windowName) -> void;
+auto init(const char* windowName, int width, int height) -> void;
 auto deinit() -> void;
 auto doUpdate() -> bool;
 auto doDraw() -> void;
@@ -27,8 +27,8 @@ auto push(State* state) -> void;
 auto pop() -> void;
 
 template <typename StateAncestor>
-auto run(const char* windowName) -> int {
-    init(windowName);
+auto run(const char* windowName, int width, int height) -> int {
+    init(windowName, width, height);
     defer(deinit());
 
     UniquePtr<State> state = makeUnique<StateAncestor>();

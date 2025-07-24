@@ -5,6 +5,8 @@
 #include "type_traits.hpp"
 #include "types.hpp"
 #include "utility.hpp"
+
+/*
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
@@ -18,6 +20,8 @@
 #else
 #define DBG_NEW new
 #endif
+*/
+#define DBG_NEW new
 
 constexpr auto DEFAULT_ALIGNMENT = 16ull;
 

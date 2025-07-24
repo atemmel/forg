@@ -59,6 +59,11 @@ constexpr T exchange(T& obj, U&& new_value) {
     return old_val;
 }
 
+template <typename Value>
+typename RemoveReference<Value>::type&& move(Value&& arg) noexcept {
+    return static_cast<typename RemoveReference<Value>::type&&>(arg);
+}
+
 }  // namespace forg
 
 #endif  // !UTILITY_HPP

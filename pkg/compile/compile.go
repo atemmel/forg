@@ -2,6 +2,8 @@ package compile
 
 import (
 	"context"
+	"fmt"
+	"forg/pkg/fetch"
 	"forg/pkg/log"
 	"forg/pkg/util"
 	"math"
@@ -16,19 +18,20 @@ type Unit struct {
 	Path string
 }
 
-type Target struct {
+type Opts struct {
 	ProjectName string
 	OutputPath  string
 	ProjectDir  string
 	BuildDir    string
 	Units       []Unit
+	Target      string
 }
 
 type compileCtx struct {
 	ctx     context.Context
 	results chan result
 	step    int
-	target  *Target
+	opts    *Opts
 	units   chan Unit
 }
 
@@ -37,7 +40,7 @@ type result struct {
 	err  error
 }
 
-func NewTarget(workingDir string) (*Target, error) {
+func NewOpts(workingDir string) (*Opts, error) {
 	absWorkingDir, err := filepath.Abs(workingDir)
 	if err != nil {
 		return nil, err
@@ -57,7 +60,7 @@ func NewTarget(workingDir string) (*Target, error) {
 	projectName := filepath.Base(absWorkingDir)
 	buildDir := workingDir + "/build"
 
-	return &Target{
+	return &Opts{
 		ProjectName: projectName,
 		ProjectDir:  absWorkingDir,
 		OutputPath:  buildDir + "/" + projectName,
@@ -66,14 +69,14 @@ func NewTarget(workingDir string) (*Target, error) {
 	}, nil
 }
 
-func Compile(t *Target) error {
-	_, err := os.Stat(t.ProjectDir)
+func Compile(o *Opts) error {
+	_, err := os.Stat(o.ProjectDir)
 	if os.IsNotExist(err) {
 		return err
 	}
-	_ = os.Mkdir(t.BuildDir, 0o755)
+	_ = os.Mkdir(o.BuildDir, 0o755)
 
-	nUnits := len(t.Units)
+	nUnits := len(o.Units)
 	if nUnits == 0 {
 		return nil
 	}
@@ -84,7 +87,7 @@ func Compile(t *Target) error {
 		ctx:     ctx,
 		results: make(chan result, nUnits),
 		step:    0,
-		target:  t,
+		opts:    o,
 		units:   make(chan Unit, nUnits),
 	}
 
@@ -119,7 +122,7 @@ func Compile(t *Target) error {
 }
 
 func queueWork(compileCtx *compileCtx) {
-	for _, unit := range compileCtx.target.Units {
+	for _, unit := range compileCtx.opts.Units {
 		compileCtx.units <- unit
 	}
 	close(compileCtx.units)
@@ -140,7 +143,7 @@ func startWorker(compileCtx *compileCtx) {
 }
 
 func logCompilation(compileCtx *compileCtx, unit Unit) {
-	nUnits := len(compileCtx.target.Units)
+	nUnits := len(compileCtx.opts.Units)
 	step := compileCtx.step
 
 	filename := path.Base(unit.Path)
@@ -152,38 +155,74 @@ func logCompilation(compileCtx *compileCtx, unit Unit) {
 
 func compileUnit(compileCtx *compileCtx, unit Unit) error {
 	base := filepath.Base(unit.Path)
-	fullpath := filepath.Join(compileCtx.target.BuildDir, base+".o")
-	cmd := exec.CommandContext(compileCtx.ctx, "g++", "-c", unit.Path, "-o", fullpath)
+	fullpath := filepath.Join(compileCtx.opts.BuildDir, base+".o")
+
+	args := []string{
+		"c++",
+		"-c", unit.Path,
+		"-o", fullpath,
+	}
+
+	if "" != compileCtx.opts.Target {
+		include := fmt.Sprintf("-I%s", fetch.GetIncludeDirFromCleanTarget(util.CleanTarget(compileCtx.opts.Target)))
+		args = append(args, "-target", compileCtx.opts.Target, include)
+	}
+
+	fmt.Println("Compiling using:", args)
+	cmd := exec.CommandContext(compileCtx.ctx, "zig", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 
 func linkTarget(compileCtx *compileCtx) error {
-	glob, err := filepath.Glob(compileCtx.target.BuildDir + "/*.o")
+	glob, err := filepath.Glob(compileCtx.opts.BuildDir + "/*.o")
 	if err != nil {
 		return err
 	}
 	args := []string{
-		"g++",
+		"zig",
+		"c++",
 		"-o",
-		compileCtx.target.OutputPath,
+		compileCtx.opts.OutputPath,
 	}
 	args = append(args, glob...)
 	args = append(args, "-L/usr/local/lib")
+	args = append(args, fmt.Sprintf("-L%s", fetch.GetLibDirFromCleanTarget(util.CleanTarget(compileCtx.opts.Target))))
 	args = append(args, "-lforg", "-lraylib")
 
-	linkers := []string{
-		"mold",
-		"lld",
-	}
+	fetch.FetchLibIfNotLocallyResolved(fetch.Opts{
+		Filename:  "libraylib",
+		Target:    compileCtx.opts.Target,
+		UrlPrefix: "https://github.com/raysan5/raylib/releases/download/5.5",
+		UrlFilename: fetch.Platform{
+			Linux:   "raylib-5.5_linux_amd64",
+			Windows: "raylib-5.5_win64_mingw-w64",
+		},
+		ArchiveKind: fetch.Platform{
+			Linux:   ".tar.gz",
+			Windows: ".zip",
+		},
+	})
 
-	for _, ld := range linkers {
-		if util.InPath(ld) {
-			args = append(args, "-fuse-ld="+ld)
-			break
+	if "" != compileCtx.opts.Target {
+		args = append(args, "-target", compileCtx.opts.Target)
+
+	} else { // native build
+		linkers := []string{
+			"mold",
+			"lld",
+		}
+
+		for _, ld := range linkers {
+			if util.InPath(ld) {
+				args = append(args, "-fuse-ld="+ld)
+				break
+			}
 		}
 	}
+
+	fmt.Println("Linking using:", args)
 
 	return util.Run(args)
 }
