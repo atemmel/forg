@@ -50,7 +50,7 @@ auto fprintType(File* file, bool value) -> void {
     fprintf(file, value ? "true" : "false");
 }
 
-auto fprint(File* file) -> void{};
+auto fprint(File* file) -> void {};
 
 auto fprintln(File* file) -> void {
     fprintf(file, "\n");

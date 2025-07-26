@@ -2,7 +2,7 @@
 
 #include "core.hpp"
 
-TEST_CASE("defer test") {
+TEST_CASE("print test") {
     forg::println(1, 3.14, "Hi hello", forg::String("My string"));
     forg::errprintln(1, 3.14, "Hi hello", forg::String("My string"));
 }

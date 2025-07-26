@@ -69,8 +69,8 @@ public:
 
 private:
     template <typename Param, typename... Params>
-    static auto fmt(Array<char>& bytes, const Param& param,
-                    Params... params) -> String {
+    static auto fmt(Array<char>& bytes, const Param& param, Params... params)
+        -> String {
         bytes.append(representation(param));
         return fmt(bytes, forward<Params>(params)...);
     }

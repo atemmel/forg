@@ -98,7 +98,7 @@ void deallocateRaw(void* ptr) {
 
 template <class T>
 inline constexpr usize align_of =
-    max_of(alignof(T), static_cast<usize>(DEFAULT_ALIGNMENT));
+    max(alignof(T), static_cast<usize>(DEFAULT_ALIGNMENT));
 
 template <class T>
 struct Allocator {
@@ -152,6 +152,28 @@ struct Allocator {
 
     ~Allocator() = default;
 };
+
+struct AllocatorInterface {
+    virtual auto alloc(size_t n) -> void* = 0;
+    virtual auto free(void* ptr) -> void  = 0;
+
+    template <typename T>
+    auto create() -> T* {
+        return (T*)this->alloc(sizeof(T));
+    }
+
+    template <typename T>
+    auto destroy(T* ptr) -> void {
+        this->free((void*)ptr);
+    }
+};
+
+struct CAllocator : public AllocatorInterface {
+    auto alloc(size_t n) -> void* override;
+    auto free(void* ptr) -> void override;
+};
+
+static CAllocator cAllocator{};
 
 template <class T>
 struct Deleter {
