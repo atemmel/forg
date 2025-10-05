@@ -5,8 +5,18 @@ import (
 	"os"
 )
 
+var (
+	LogVerbose = false
+)
+
 func Stderr(str string, args ...any) {
 	fmt.Fprintf(os.Stderr, str, args...)
+}
+
+func Verbose(str string, args ...any) {
+	if LogVerbose {
+		Stderr(str, args...)
+	}
 }
 
 func AssertErr(err error) {

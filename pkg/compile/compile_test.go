@@ -52,6 +52,7 @@ func randomStr(length, seed int64) string {
 func writeFile(dir, file, content string) {
 	fullpath := path.Join(dir, file)
 	err := os.WriteFile(fullpath, []byte(content), 0o644)
+
 	if err != nil {
 		panic(err)
 	}
@@ -75,7 +76,7 @@ void %s() {
 	return name, hpp, cpp
 }
 
-func setup(t *testing.T) *Target {
+func setup(t *testing.T) *Opts {
 	dir := t.TempDir()
 
 	const n = 16
@@ -89,32 +90,36 @@ func setup(t *testing.T) *Target {
 		writeFile(dir, cppPath, cppSrc)
 	}
 
-	target, err := NewTarget(dir)
+	writeFile(dir, "main.cpp", `
+	auto main() -> int {}
+	`)
+
+	opts, err := NewOpts(dir)
 	log.AssertErr(err)
-	return target
+	return opts
 }
 
 func TestCompile(t *testing.T) {
-	target := setup(t)
+	opts := setup(t)
 
-	err := Compile(target)
+	err := Compile(opts)
 	if err != nil {
 		t.Fatal("Error on compilation:", err)
 	}
 }
 
 func TestCompileWithError(t *testing.T) {
-	target := setup(t)
+	opts := setup(t)
 
-	l := len(target.Units)
+	l := len(opts.Units)
 	half := l / 2
 
-	target.Units = append(target.Units[:half+1], target.Units[half:]...)
-	target.Units[half] = Unit{
+	opts.Units = append(opts.Units[:half+1], opts.Units[half:]...)
+	opts.Units[half] = Unit{
 		Path: "xyz.cpp",
 	}
 
-	err := Compile(target)
+	err := Compile(opts)
 	if err == nil {
 		t.Fatal("Compilation suceeded unexpectedly")
 	}

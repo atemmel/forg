@@ -132,6 +132,9 @@ func startWorker(compileCtx *compileCtx) {
 	for {
 		select {
 		case unit := <-compileCtx.units:
+			if unit.Path == "" { // sometimes this happens, no clue why
+				continue
+			}
 			compileCtx.results <- result{
 				err:  compileUnit(compileCtx, unit),
 				unit: unit,
@@ -149,11 +152,12 @@ func logCompilation(compileCtx *compileCtx, unit Unit) {
 	filename := path.Base(unit.Path)
 	progress := int(math.Round(float64(step+1) / float64(nUnits+1) * 100))
 	//TODO: prefix with \033[2K\r
-	log.Stderr("[%3d%%] %s\n", progress, filename)
+	log.Verbose("[%3d%%] %s\n", progress, filename)
 	compileCtx.step++
 }
 
 func compileUnit(compileCtx *compileCtx, unit Unit) error {
+	log.Verbose("Compiling: %v", unit)
 	base := filepath.Base(unit.Path)
 	fullpath := filepath.Join(compileCtx.opts.BuildDir, base+".o")
 
@@ -168,7 +172,7 @@ func compileUnit(compileCtx *compileCtx, unit Unit) error {
 		args = append(args, "-target", compileCtx.opts.Target, include)
 	}
 
-	fmt.Println("Compiling using:", args)
+	log.Verbose("Compiling using: zig %v", args)
 	cmd := exec.CommandContext(compileCtx.ctx, "zig", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

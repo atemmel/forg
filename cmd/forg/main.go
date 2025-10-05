@@ -6,7 +6,6 @@ import (
 	"forg/pkg/log"
 	"forg/pkg/util"
 	"forg/pkg/watch"
-	oglog "log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -28,6 +27,7 @@ func init() {
 }
 
 func initCmd(ctx *cli.Context) error {
+	log.LogVerbose = ctx.Bool("verbose")
 	workingDirectory = util.Either(ctx.String("path"), workingDirectory)
 	//TODO: check for existing project before creating a new one
 	err := os.Mkdir(workingDirectory, 0o755)
@@ -60,6 +60,7 @@ func initCmd(ctx *cli.Context) error {
 }
 
 func buildCmd(ctx *cli.Context) error {
+	log.LogVerbose = ctx.Bool("verbose")
 	workingDirectory = util.Either(ctx.String("path"), workingDirectory)
 	o, err := compile.NewOpts(workingDirectory)
 	o.Target = ctx.String("target")
@@ -71,6 +72,7 @@ func buildCmd(ctx *cli.Context) error {
 var runningCmd *exec.Cmd
 
 func runCmd(ctx *cli.Context) error {
+	log.LogVerbose = ctx.Bool("verbose")
 	workingDirectory = util.Either(ctx.String("path"), workingDirectory)
 	run(ctx)
 	go func() {
@@ -137,12 +139,17 @@ func main() {
 				Aliases: []string{"t"},
 				Usage:   "set build target (native|windows)",
 			},
+			&cli.BoolFlag{
+				Name:    "verbose",
+				Aliases: []string{"V"},
+				Usage:   "enable verbose logging",
+			},
 		},
 	}
 
 	cli.AppHelpTemplate = "forg\n\n" + cli.AppHelpTemplate
 
 	if err := app.Run(os.Args); err != nil {
-		oglog.Fatal(err)
+		log.AssertErr(err)
 	}
 }
