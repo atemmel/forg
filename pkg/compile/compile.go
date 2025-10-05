@@ -226,7 +226,7 @@ func linkTarget(compileCtx *compileCtx) error {
 		}
 	}
 
-	fmt.Println("Linking using:", args)
+	log.Verbose("Linking using: %v", args)
 
 	return util.Run(args)
 }

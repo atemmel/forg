@@ -6,5 +6,5 @@ using namespace forg;
 
 auto main() -> int {
     println("Starting...");
-    return state::run<MyState>("My game");
+    return state::run<MyState>("My game", 800, 600);
 }
