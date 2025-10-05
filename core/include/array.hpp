@@ -82,11 +82,11 @@ public:
     }
     constexpr void reserve(usize newSize) {
         if (newSize > this->capacity()) {
-            realoc(newSize);
+            realloc(newSize);
         }
     }
     constexpr void shrinkToFit() {
-        realoc(currentSize);
+        realloc(currentSize);
     }
 
     // Modifiers
@@ -178,16 +178,16 @@ public:
 
 private:
     constexpr void expand() {
-        usize newSize = static_cast<usize>(this->capacity() * 1.5);
+        usize newSize = static_cast<usize>(this->capacity() * 2);
         if (this->capacity() == 0) {
             newSize = 1;
         } else if (this->capacity() == 1) {
             newSize++;
         }
 
-        realoc(newSize);
+        realloc(newSize);
     }
-    constexpr void realoc(usize newSize) {
+    constexpr void realloc(usize newSize) {
         Buffer<T> newBuffer(newSize);
         for (usize i = 0; i < newSize; i++) {
             newBuffer[i] = buffer[i];

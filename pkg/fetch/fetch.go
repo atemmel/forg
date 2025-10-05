@@ -108,10 +108,12 @@ func FetchLibIfNotLocallyResolved(opts Opts) error {
 	log.AssertErr(err)
 	defer resp.Body.Close()
 
-	if archiveKind == ".zip" {
+	switch archiveKind {
+	case ".zip":
 		extractZip(resp, urlFilename, target)
-	} else if archiveKind == ".h" { //TODO: this case is not fully complete
+	case ".h": //TODO: this case is not fully complete
 		writeFile(resp, "include", urlFilename+archiveKind, target)
+
 	}
 
 	return nil

@@ -167,6 +167,10 @@ func compileUnit(compileCtx *compileCtx, unit Unit) error {
 		"-o", fullpath,
 	}
 
+	if runtime.GOOS != "windows" {
+		args = append(args, "-I/usr/local/include")
+	}
+
 	if "" != compileCtx.opts.Target {
 		include := fmt.Sprintf("-I%s", fetch.GetIncludeDirFromCleanTarget(util.CleanTarget(compileCtx.opts.Target)))
 		args = append(args, "-target", compileCtx.opts.Target, include)
@@ -191,7 +195,9 @@ func linkTarget(compileCtx *compileCtx) error {
 		compileCtx.opts.OutputPath,
 	}
 	args = append(args, glob...)
-	args = append(args, "-L/usr/local/lib")
+	if runtime.GOOS != "windows" {
+		args = append(args, "-L/usr/local/lib")
+	}
 	args = append(args, fmt.Sprintf("-L%s", fetch.GetLibDirFromCleanTarget(util.CleanTarget(compileCtx.opts.Target))))
 	args = append(args, "-lforg", "-lraylib")
 
@@ -211,7 +217,6 @@ func linkTarget(compileCtx *compileCtx) error {
 
 	if "" != compileCtx.opts.Target {
 		args = append(args, "-target", compileCtx.opts.Target)
-
 	} else { // native build
 		linkers := []string{
 			"mold",
