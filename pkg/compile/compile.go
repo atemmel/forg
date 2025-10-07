@@ -40,12 +40,23 @@ type result struct {
 	err  error
 }
 
+func recurseFind(dir string, ext string) ([]string, error) {
+	files := []string{}
+	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		if filepath.Ext(path) == ext {
+			files = append(files, path)
+		}
+		return nil
+	})
+	return files, err
+}
+
 func NewOpts(workingDir string) (*Opts, error) {
 	absWorkingDir, err := filepath.Abs(workingDir)
 	if err != nil {
 		return nil, err
 	}
-	files, err := filepath.Glob(absWorkingDir + "/*.cpp")
+	files, err := recurseFind(absWorkingDir, ".cpp")
 	if err != nil {
 		return nil, err
 	}
@@ -165,6 +176,7 @@ func compileUnit(compileCtx *compileCtx, unit Unit) error {
 		"c++",
 		"-c", unit.Path,
 		"-o", fullpath,
+		"-I./include",
 	}
 
 	if runtime.GOOS != "windows" {
@@ -199,7 +211,7 @@ func linkTarget(compileCtx *compileCtx) error {
 		args = append(args, "-L/usr/local/lib")
 	}
 	args = append(args, fmt.Sprintf("-L%s", fetch.GetLibDirFromCleanTarget(util.CleanTarget(compileCtx.opts.Target))))
-	args = append(args, "-lforg", "-lraylib")
+	args = append(args, "-lraylib")
 
 	fetch.FetchLibIfNotLocallyResolved(fetch.Opts{
 		Filename:  "libraylib",

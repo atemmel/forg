@@ -59,9 +59,13 @@ func initCmd(ctx *cli.Context) error {
 	return nil
 }
 
-func buildCmd(ctx *cli.Context) error {
+func initFromFlag(ctx *cli.Context) {
 	log.LogVerbose = ctx.Bool("verbose")
 	workingDirectory = util.Either(ctx.String("path"), workingDirectory)
+}
+
+func buildCmd(ctx *cli.Context) error {
+	initFromFlag(ctx)
 	o, err := compile.NewOpts(workingDirectory)
 	o.Target = ctx.String("target")
 	log.AssertErr(err)
@@ -72,8 +76,7 @@ func buildCmd(ctx *cli.Context) error {
 var runningCmd *exec.Cmd
 
 func runCmd(ctx *cli.Context) error {
-	log.LogVerbose = ctx.Bool("verbose")
-	workingDirectory = util.Either(ctx.String("path"), workingDirectory)
+	initFromFlag(ctx)
 	run(ctx)
 	go func() {
 		err := runningCmd.Wait()
@@ -87,6 +90,7 @@ func runCmd(ctx *cli.Context) error {
 }
 
 func run(ctx *cli.Context) error {
+	initFromFlag(ctx)
 	o, err := compile.NewOpts(workingDirectory)
 	if err != nil {
 		return err
