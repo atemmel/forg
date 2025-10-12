@@ -237,6 +237,8 @@ func linkTarget(compileCtx *compileCtx) error {
 	if "" == compileCtx.opts.Target {
 		args = append(args, "-L/usr/local/lib")
 		args = append(args, "-L/usr/lib")
+	} else {
+		args = append(args, "-lopengl32", "-lgdi32", "-lwinmm")
 	}
 	args = append(args, "-lraylib")
 
