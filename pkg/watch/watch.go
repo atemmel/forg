@@ -1,7 +1,6 @@
 package watch
 
 import (
-	"fmt"
 	"io/fs"
 	"os"
 	"strings"
@@ -41,8 +40,7 @@ func Extensions(directory string, extensions []string, fn Callback, interval tim
 			now := i.ModTime()
 			before := state.files[p]
 
-			if before.After(now) {
-				fmt.Println(p, "was changed")
+			if now.After(before) {
 				state.files[p] = now
 				//TODO: consider if error should be handled or not
 				_ = fn(p)
@@ -58,11 +56,9 @@ func poll(state *state, callback func(string, fs.DirEntry) error) error {
 	return fs.WalkDir(state.dir, ".", func(path string, d fs.DirEntry, err error) error {
 		for _, ext := range state.extensions {
 			if strings.HasSuffix(d.Name(), ext) {
-				goto OK
+				return callback(path, d)
 			}
 		}
 		return nil
-	OK:
-		return callback(path, d)
 	})
 }

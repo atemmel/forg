@@ -85,12 +85,12 @@ func runCmd(ctx *cli.Context) error {
 		}
 	}()
 	return watch.Extensions(workingDirectory, []string{".cpp", ".hpp"}, func(s string) error {
+		runningCmd.Process.Kill()
 		return run(ctx)
 	}, 100)
 }
 
 func run(ctx *cli.Context) error {
-	initFromFlag(ctx)
 	o, err := compile.NewOpts(workingDirectory)
 	if err != nil {
 		return err
