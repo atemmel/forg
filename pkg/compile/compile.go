@@ -2,7 +2,6 @@ package compile
 
 import (
 	"context"
-	"fmt"
 	"forg/pkg/fetch"
 	"forg/pkg/log"
 	"forg/pkg/util"
@@ -28,11 +27,12 @@ type Opts struct {
 }
 
 type compileCtx struct {
-	ctx     context.Context
-	results chan result
-	step    int
-	opts    *Opts
-	units   chan Unit
+	ctx      context.Context
+	results  chan result
+	step     int
+	opts     *Opts
+	units    chan Unit
+	vendored []string
 }
 
 type result struct {
@@ -95,11 +95,21 @@ func Compile(o *Opts) error {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	compileCtx := compileCtx{
-		ctx:     ctx,
-		results: make(chan result, nUnits),
-		step:    0,
-		opts:    o,
-		units:   make(chan Unit, nUnits),
+		ctx:      ctx,
+		results:  make(chan result, nUnits),
+		step:     0,
+		opts:     o,
+		units:    make(chan Unit, nUnits),
+		vendored: make([]string, 0, 16),
+	}
+
+	entries, err := os.ReadDir("./vendor")
+	if err == nil && len(entries) > 0 {
+		for _, entry := range entries {
+			if entry.IsDir() {
+				compileCtx.vendored = append(compileCtx.vendored, "./vendor/"+entry.Name())
+			}
+		}
 	}
 
 	// create worker pool
@@ -168,7 +178,7 @@ func logCompilation(compileCtx *compileCtx, unit Unit) {
 }
 
 func compileUnit(compileCtx *compileCtx, unit Unit) error {
-	log.Verbose("Compiling: %v", unit)
+	log.Verbose("Compiling: %v\n", unit)
 	base := filepath.Base(unit.Path)
 	fullpath := filepath.Join(compileCtx.opts.BuildDir, base+".o")
 
@@ -176,6 +186,8 @@ func compileUnit(compileCtx *compileCtx, unit Unit) error {
 		"c++",
 		"-c", unit.Path,
 		"-o", fullpath,
+		"-g",
+		"-O0",
 		"-I./include",
 	}
 
@@ -183,12 +195,24 @@ func compileUnit(compileCtx *compileCtx, unit Unit) error {
 		args = append(args, "-I/usr/local/include")
 	}
 
-	if "" != compileCtx.opts.Target {
-		include := fmt.Sprintf("-I%s", fetch.GetIncludeDirFromCleanTarget(util.CleanTarget(compileCtx.opts.Target)))
-		args = append(args, "-target", compileCtx.opts.Target, include)
+	for _, dir := range compileCtx.vendored {
+		innerDirs, err := os.ReadDir(dir)
+		if err != nil || len(innerDirs) <= 0 {
+			continue
+		}
+
+		for _, sub := range innerDirs {
+			if sub.IsDir() && sub.Name() == "include" {
+				args = append(args, "-I"+dir+"/include")
+			}
+		}
 	}
 
-	log.Verbose("Compiling using: zig %v", args)
+	if "" != compileCtx.opts.Target {
+		args = append(args, "-target", compileCtx.opts.Target)
+	}
+
+	log.Verbose("Compiling using: zig %v\n", args)
 	cmd := exec.CommandContext(compileCtx.ctx, "zig", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -203,15 +227,31 @@ func linkTarget(compileCtx *compileCtx) error {
 	args := []string{
 		"zig",
 		"c++",
-		"-o",
-		compileCtx.opts.OutputPath,
+		"-o", compileCtx.opts.OutputPath,
+		"-g",
+		"-rdynamic",
+		"-O0",
+		"-Draylib_USE_STATIC_LIBS",
 	}
 	args = append(args, glob...)
-	if runtime.GOOS != "windows" {
+	if "" == compileCtx.opts.Target {
 		args = append(args, "-L/usr/local/lib")
+		args = append(args, "-L/usr/lib")
 	}
-	args = append(args, fmt.Sprintf("-L%s", fetch.GetLibDirFromCleanTarget(util.CleanTarget(compileCtx.opts.Target))))
 	args = append(args, "-lraylib")
+
+	for _, dir := range compileCtx.vendored {
+		innerDirs, err := os.ReadDir(dir)
+		if err != nil || len(innerDirs) <= 0 {
+			continue
+		}
+
+		for _, sub := range innerDirs {
+			if sub.IsDir() && sub.Name() == "lib" {
+				args = append(args, "-L"+dir+"/lib")
+			}
+		}
+	}
 
 	fetch.FetchLibIfNotLocallyResolved(fetch.Opts{
 		Filename:  "libraylib",
@@ -243,7 +283,7 @@ func linkTarget(compileCtx *compileCtx) error {
 		}
 	}
 
-	log.Verbose("Linking using: %v", args)
+	log.Verbose("Linking using: %v\n", args)
 
 	return util.Run(args)
 }
