@@ -1,0 +1,7 @@
+always:
+  compile-flags: -I./include
+  linker-flags: -rdynamic -lraylib
+
+modes:
+  dev:
+  dev-windows:

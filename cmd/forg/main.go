@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"forg/pkg/compile"
 	"forg/pkg/log"
 	"forg/pkg/util"
@@ -10,20 +11,35 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/goccy/go-yaml"
 	"github.com/urfave/cli/v2" // imports as package "cli"
 )
+
+type config struct {
+	Always innerConf
+	Modes  map[string]innerConf
+}
 
 var (
 	workingDirectory = "."
 
 	//go:embed template/*
 	templateProject embed.FS
+
+	conf config
 )
 
 func init() {
 	var err error
 	workingDirectory, err = os.Getwd()
 	log.AssertErr(err)
+	bytes, err := os.ReadFile("./forg.yaml")
+	if err == nil {
+		yaml.Unmarshal(bytes, &conf)
+		conf.Always.CompileFlags = util.Either(conf.Always.CompileFlags, "-O0 -g -I./include")
+		conf.Always.LinkerFlags = util.Either(conf.Always.LinkerFlags, "-rdynamic -lraylib")
+	}
+	fmt.Println(conf)
 }
 
 func initCmd(ctx *cli.Context) error {
@@ -107,7 +123,13 @@ func run(ctx *cli.Context) error {
 	return runningCmd.Start()
 }
 
+type innerConf struct {
+	CompileFlags string `yaml:"compile-flags"`
+	LinkerFlags  string `yaml:"linker-flags"`
+}
+
 func main() {
+
 	app := &cli.App{
 		Name:  "forg",
 		Usage: "Build games",

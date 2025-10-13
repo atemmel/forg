@@ -27,12 +27,14 @@ type Opts struct {
 }
 
 type compileCtx struct {
-	ctx      context.Context
-	results  chan result
-	step     int
-	opts     *Opts
-	units    chan Unit
-	vendored []string
+	ctx          context.Context
+	results      chan result
+	step         int
+	opts         *Opts
+	units        chan Unit
+	vendored     []string
+	compileFlags []string
+	linkerFlags  []string
 }
 
 type result struct {
