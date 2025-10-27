@@ -100,10 +100,13 @@ func runCmd(ctx *cli.Context) error {
 			os.Exit(0)
 		}
 	}()
-	return watch.Extensions(workingDirectory, []string{".cpp", ".hpp"}, func(s string) error {
-		runningCmd.Process.Kill()
-		return run(ctx)
-	}, 100)
+	if ctx.Bool("watch") {
+		return watch.Extensions(workingDirectory, []string{".cpp", ".hpp"}, func(s string) error {
+			runningCmd.Process.Kill()
+			return run(ctx)
+		}, 100)
+	}
+	return nil
 }
 
 func run(ctx *cli.Context) error {
@@ -147,6 +150,13 @@ func main() {
 				Name:   "run",
 				Usage:  "run project",
 				Action: runCmd,
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "watch",
+						Aliases: []string{"w"},
+						Usage:   "watch for continuous rebuilds",
+					},
+				},
 			},
 			{
 				Name:   "init",
