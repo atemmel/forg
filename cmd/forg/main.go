@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	"fmt"
 	"forg/pkg/compile"
 	"forg/pkg/log"
 	"forg/pkg/util"
@@ -10,15 +9,21 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/goccy/go-yaml"
 	"github.com/urfave/cli/v2" // imports as package "cli"
 )
 
 type config struct {
-	Always innerConf
-	Modes  map[string]innerConf
+	Always compile.Flags
+	Modes  map[string]compile.Flags
 }
+
+const (
+	DefaultCompileFlags = "-O0 -g -I./include"
+	DefaultLinkerFlags  = "-rdynamiic -lraylib"
+)
 
 var (
 	workingDirectory = "."
@@ -36,10 +41,9 @@ func init() {
 	bytes, err := os.ReadFile("./forg.yaml")
 	if err == nil {
 		yaml.Unmarshal(bytes, &conf)
-		conf.Always.CompileFlags = util.Either(conf.Always.CompileFlags, "-O0 -g -I./include")
-		conf.Always.LinkerFlags = util.Either(conf.Always.LinkerFlags, "-rdynamic -lraylib")
+		conf.Always.CompileFlags = util.Either(conf.Always.CompileFlags, DefaultCompileFlags)
+		conf.Always.LinkerFlags = util.Either(conf.Always.LinkerFlags, DefaultLinkerFlags)
 	}
-	fmt.Println(conf)
 }
 
 func initCmd(ctx *cli.Context) error {
@@ -82,41 +86,51 @@ func initFromFlag(ctx *cli.Context) {
 
 func buildCmd(ctx *cli.Context) error {
 	initFromFlag(ctx)
-	o, err := compile.NewOpts(workingDirectory)
+	c, l := getFlags(ctx.Args().Get(0))
+	o, err := compile.NewOpts(workingDirectory, c, l)
 	o.Target = ctx.String("target")
+	o.KeepStderr = false
 	log.AssertErr(err)
 	log.AssertErr(compile.Compile(o))
 	return nil
 }
 
-var runningCmd *exec.Cmd
+var (
+	runningCmd *exec.Cmd
+)
 
 func runCmd(ctx *cli.Context) error {
 	initFromFlag(ctx)
-	run(ctx)
+	run(ctx, false)
 	go func() {
-		err := runningCmd.Wait()
-		if err == nil {
-			os.Exit(0)
+		if runningCmd != nil {
+			err := runningCmd.Wait()
+			if err == nil {
+				os.Exit(0)
+			}
 		}
 	}()
 	if ctx.Bool("watch") {
 		return watch.Extensions(workingDirectory, []string{".cpp", ".hpp"}, func(s string) error {
 			runningCmd.Process.Kill()
-			return run(ctx)
+			return run(ctx, true)
 		}, 100)
 	}
 	return nil
 }
 
-func run(ctx *cli.Context) error {
-	o, err := compile.NewOpts(workingDirectory)
+func run(ctx *cli.Context, watching bool) error {
+	c, l := getFlags(ctx.Args().Get(0))
+	o, err := compile.NewOpts(workingDirectory, c, l)
 	if err != nil {
 		return err
 	}
 	o.Target = ctx.String("target")
+	o.KeepStderr = watching
 	log.AssertErr(err)
-	log.AssertErr(compile.Compile(o))
+	if compile.Compile(o) != nil {
+		return nil
+	}
 	if runningCmd != nil {
 		_ = runningCmd.Process.Kill()
 	}
@@ -124,11 +138,6 @@ func run(ctx *cli.Context) error {
 	runningCmd.Stdout = os.Stdout
 	runningCmd.Stderr = os.Stderr
 	return runningCmd.Start()
-}
-
-type innerConf struct {
-	CompileFlags string `yaml:"compile-flags"`
-	LinkerFlags  string `yaml:"linker-flags"`
 }
 
 func main() {
@@ -170,11 +179,6 @@ func main() {
 				Aliases: []string{"p"},
 				Usage:   "set path to project to operate on",
 			},
-			&cli.StringFlag{
-				Name:    "target",
-				Aliases: []string{"t"},
-				Usage:   "set build target (native|windows)",
-			},
 			&cli.BoolFlag{
 				Name:    "verbose",
 				Aliases: []string{"V"},
@@ -188,4 +192,17 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		log.AssertErr(err)
 	}
+}
+
+func getFlags(mode string) ([]string, []string) {
+	compileFlags := strings.Split(conf.Always.CompileFlags, " ")
+	linkerFlags := strings.Split(conf.Always.LinkerFlags, " ")
+	c, ok := conf.Modes[mode]
+	if !ok {
+		return compileFlags, linkerFlags
+	}
+	moreCompileFlags := strings.Split(c.CompileFlags, " ")
+	moreLinkerFlags := strings.Split(c.LinkerFlags, " ")
+
+	return append(compileFlags, moreCompileFlags...), append(linkerFlags, moreLinkerFlags...)
 }

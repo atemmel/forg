@@ -10,7 +10,7 @@ var (
 )
 
 func Stderr(str string, args ...any) {
-	fmt.Fprintf(os.Stderr, str, args...)
+	fmt.Fprintf(os.Stdout, str, args...)
 }
 
 func Verbose(str string, args ...any) {

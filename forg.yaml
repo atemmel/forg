@@ -3,5 +3,7 @@ always:
   linker-flags: -rdynamic -lraylib
 
 modes:
-  dev:
+  dev: 
+    compile-flags: -g -O0
   dev-windows:
+    linker-flags: -lopengl32 -lgfi32 -lwinmm

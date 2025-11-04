@@ -2,7 +2,6 @@ package compile
 
 import (
 	"context"
-	"forg/pkg/fetch"
 	"forg/pkg/log"
 	"forg/pkg/util"
 	"math"
@@ -11,19 +10,28 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 type Unit struct {
 	Path string
 }
 
+type Flags struct {
+	CompileFlags string `yaml:"compile-flags"`
+	LinkerFlags  string `yaml:"linker-flags"`
+}
+
 type Opts struct {
-	ProjectName string
-	OutputPath  string
-	ProjectDir  string
-	BuildDir    string
-	Units       []Unit
-	Target      string
+	ProjectName  string
+	OutputPath   string
+	ProjectDir   string
+	BuildDir     string
+	Units        []Unit
+	Target       string
+	KeepStderr   bool
+	CompileFlags []string
+	LinkerFlags  []string
 }
 
 type compileCtx struct {
@@ -38,8 +46,9 @@ type compileCtx struct {
 }
 
 type result struct {
-	unit Unit
-	err  error
+	unit   Unit
+	err    error
+	stderr string
 }
 
 func recurseFind(dir string, ext string) ([]string, error) {
@@ -53,7 +62,7 @@ func recurseFind(dir string, ext string) ([]string, error) {
 	return files, err
 }
 
-func NewOpts(workingDir string) (*Opts, error) {
+func NewOpts(workingDir string, compileflags, linkerFlags []string) (*Opts, error) {
 	absWorkingDir, err := filepath.Abs(workingDir)
 	if err != nil {
 		return nil, err
@@ -74,11 +83,13 @@ func NewOpts(workingDir string) (*Opts, error) {
 	buildDir := workingDir + "/build"
 
 	return &Opts{
-		ProjectName: projectName,
-		ProjectDir:  absWorkingDir,
-		OutputPath:  buildDir + "/" + projectName,
-		Units:       units,
-		BuildDir:    buildDir,
+		ProjectName:  projectName,
+		ProjectDir:   absWorkingDir,
+		OutputPath:   buildDir + "/" + projectName,
+		Units:        units,
+		BuildDir:     buildDir,
+		CompileFlags: compileflags,
+		LinkerFlags:  linkerFlags,
 	}, nil
 }
 
@@ -97,12 +108,14 @@ func Compile(o *Opts) error {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	compileCtx := compileCtx{
-		ctx:      ctx,
-		results:  make(chan result, nUnits),
-		step:     0,
-		opts:     o,
-		units:    make(chan Unit, nUnits),
-		vendored: make([]string, 0, 16),
+		ctx:          ctx,
+		results:      make(chan result, nUnits),
+		step:         0,
+		opts:         o,
+		units:        make(chan Unit, nUnits),
+		vendored:     make([]string, 0, 16),
+		compileFlags: o.CompileFlags,
+		linkerFlags:  o.LinkerFlags,
 	}
 
 	entries, err := os.ReadDir("./vendor")
@@ -128,6 +141,7 @@ func Compile(o *Opts) error {
 		result := <-compileCtx.results
 		if result.err != nil {
 			log.Stderr("Error occured, waiting for unfinished jobs...\n")
+			log.Stderr(result.stderr)
 			cancel()
 			return result.err
 		}
@@ -137,9 +151,14 @@ func Compile(o *Opts) error {
 
 	cancel()
 
-	err = linkTarget(&compileCtx)
+	err, stderr := linkTarget(&compileCtx)
 	if err == nil {
-		log.Stderr("[100%%] link\n")
+		log.Verbose("[100%%] link\n")
+	}
+	if stderr != "" {
+		log.Stderr(stderr)
+	} else if err != nil {
+		log.Stderr("%v\n", err)
 	}
 	return err
 }
@@ -158,9 +177,11 @@ func startWorker(compileCtx *compileCtx) {
 			if unit.Path == "" { // sometimes this happens, no clue why
 				continue
 			}
+			err, output := compileUnit(compileCtx, unit)
 			compileCtx.results <- result{
-				err:  compileUnit(compileCtx, unit),
-				unit: unit,
+				err:    err,
+				unit:   unit,
+				stderr: output,
 			}
 		case _ = <-compileCtx.ctx.Done():
 			return
@@ -179,7 +200,7 @@ func logCompilation(compileCtx *compileCtx, unit Unit) {
 	compileCtx.step++
 }
 
-func compileUnit(compileCtx *compileCtx, unit Unit) error {
+func compileUnit(compileCtx *compileCtx, unit Unit) (error, string) {
 	log.Verbose("Compiling: %v\n", unit)
 	base := filepath.Base(unit.Path)
 	fullpath := filepath.Join(compileCtx.opts.BuildDir, base+".o")
@@ -188,14 +209,9 @@ func compileUnit(compileCtx *compileCtx, unit Unit) error {
 		"c++",
 		"-c", unit.Path,
 		"-o", fullpath,
-		"-g",
-		"-O0",
-		"-I./include",
 	}
 
-	if runtime.GOOS != "windows" {
-		args = append(args, "-I/usr/local/include")
-	}
+	args = append(args, compileCtx.compileFlags...)
 
 	for _, dir := range compileCtx.vendored {
 		innerDirs, err := os.ReadDir(dir)
@@ -216,33 +232,30 @@ func compileUnit(compileCtx *compileCtx, unit Unit) error {
 
 	log.Verbose("Compiling using: zig %v\n", args)
 	cmd := exec.CommandContext(compileCtx.ctx, "zig", args...)
-	cmd.Stdout = os.Stdout
+	if compileCtx.opts.KeepStderr {
+		bytes, err := cmd.CombinedOutput()
+		return err, string(bytes)
+	}
 	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	cmd.Stdout = os.Stdout
+	return cmd.Run(), ""
 }
 
-func linkTarget(compileCtx *compileCtx) error {
+func linkTarget(compileCtx *compileCtx) (error, string) {
 	glob, err := filepath.Glob(compileCtx.opts.BuildDir + "/*.o")
 	if err != nil {
-		return err
+		return err, ""
 	}
 	args := []string{
-		"zig",
 		"c++",
 		"-o", compileCtx.opts.OutputPath,
-		"-g",
-		"-rdynamic",
-		"-O0",
-		"-Draylib_USE_STATIC_LIBS",
 	}
+	args = append(args, compileCtx.linkerFlags...)
 	args = append(args, glob...)
 	if "" == compileCtx.opts.Target {
 		args = append(args, "-L/usr/local/lib")
 		args = append(args, "-L/usr/lib")
-	} else {
-		args = append(args, "-lopengl32", "-lgdi32", "-lwinmm")
 	}
-	args = append(args, "-lraylib")
 
 	for _, dir := range compileCtx.vendored {
 		innerDirs, err := os.ReadDir(dir)
@@ -257,37 +270,42 @@ func linkTarget(compileCtx *compileCtx) error {
 		}
 	}
 
-	fetch.FetchLibIfNotLocallyResolved(fetch.Opts{
-		Filename:  "libraylib",
-		Target:    compileCtx.opts.Target,
-		UrlPrefix: "https://github.com/raysan5/raylib/releases/download/5.5",
-		UrlFilename: fetch.Platform{
-			Linux:   "raylib-5.5_linux_amd64",
-			Windows: "raylib-5.5_win64_mingw-w64",
-		},
-		ArchiveKind: fetch.Platform{
-			Linux:   ".tar.gz",
-			Windows: ".zip",
-		},
-	})
+	/*
+		fetch.FetchLibIfNotLocallyResolved(fetch.Opts{
+			Filename:  "libraylib",
+			Target:    compileCtx.opts.Target,
+			UrlPrefix: "https://github.com/raysan5/raylib/releases/download/5.5",
+			UrlFilename: fetch.Platform{
+				Linux:   "raylib-5.5_linux_amd64",
+				Windows: "raylib-5.5_win64_mingw-w64",
+			},
+			ArchiveKind: fetch.Platform{
+				Linux:   ".tar.gz",
+				Windows: ".zip",
+			},
+		})
+	*/
 
-	if "" != compileCtx.opts.Target {
-		args = append(args, "-target", compileCtx.opts.Target)
-	} else { // native build
-		linkers := []string{
-			"mold",
-			"lld",
-		}
+	linkers := []string{
+		"mold",
+		"lld",
+	}
 
-		for _, ld := range linkers {
-			if util.InPath(ld) {
-				args = append(args, "-fuse-ld="+ld)
-				break
-			}
+	for _, ld := range linkers {
+		if util.InPath(ld) {
+			args = append(args, "-fuse-ld="+ld)
+			break
 		}
 	}
 
-	log.Verbose("Linking using: %v\n", args)
+	log.Verbose("Linking using: %v\n", strings.Join(args, " "))
 
-	return util.Run(args)
+	cmd := exec.Command("zig", args...)
+	if compileCtx.opts.KeepStderr {
+		bytes, err := cmd.CombinedOutput()
+		return err, string(bytes)
+	}
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run(), ""
 }
