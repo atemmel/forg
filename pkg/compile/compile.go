@@ -100,6 +100,13 @@ func Compile(o *Opts) error {
 	}
 	_ = os.Mkdir(o.BuildDir, 0o755)
 
+	err = codegenResources(o)
+	if err != nil {
+		log.Stderr("Codegen failed: %v\n", err)
+		return err
+
+	}
+
 	nUnits := len(o.Units)
 	if nUnits == 0 {
 		return nil
