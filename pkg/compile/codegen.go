@@ -28,7 +28,7 @@ func findResources(o *Opts) Resources {
 	return r
 }
 
-func codegenResources(o *Opts) error {
+func CodegenResources(o *Opts) error {
 	r := findResources(o)
 	_ = r
 	fIncDir := path.Join(o.ProjectDir, "include", "generated")
@@ -38,10 +38,11 @@ func codegenResources(o *Opts) error {
 	os.MkdirAll(fIncDir, 0o755)
 	os.MkdirAll(fSrcDir, 0o755)
 
-	codegenResourceInclude(o, r, fInc)
-	codegenResourceSrc(o, r, fSrc)
-
-	return nil
+	err := codegenResourceInclude(o, r, fInc)
+	if err != nil {
+		return err
+	}
+	return codegenResourceSrc(o, r, fSrc)
 }
 
 func codegenResourceInclude(o *Opts, r Resources, f string) error {
@@ -57,7 +58,9 @@ auto deinitTextures() -> void;`)
 
 	for _, s := range r.Sprites {
 		word := funcName(s)
-		b.WriteString("\n\nauto get" + word + "Texture() -> Texture;")
+		b.WriteString("\n\nauto get")
+		b.WriteString(word)
+		b.WriteString("Texture() -> Texture;")
 	}
 
 	return os.WriteFile(f, []byte(b.String()), 0o755)
@@ -68,11 +71,13 @@ func codegenResourceSrc(o *Opts, r Resources, f string) error {
 	b.WriteString("// Generated at ")
 	b.WriteString(time.Now().Format(time.RFC822Z))
 	b.WriteString("\n\n")
-	b.WriteString("#include <generated/resources.hpp>\n")
-	b.WriteString("#include <raylib.h>\n\n")
+	b.WriteString(`#include <generated/resources.hpp>
+
+#include <raylib.h>
+
+`)
 
 	for _, s := range r.Sprites {
-		//s = s[len(s)+1:]
 		b.WriteString("Texture ")
 		b.WriteString(funcName(s))
 		b.WriteString(";\n")
@@ -92,6 +97,30 @@ auto initTextures() -> void {
 		b.WriteString("\");\n")
 	}
 	b.WriteString("}")
+
+	b.WriteString(`
+
+auto deinitTextures() -> void {
+`)
+	for _, s := range r.Sprites {
+		fn := funcName(s)
+		b.WriteString("    ")
+		b.WriteString("UnloadTexture(")
+		b.WriteString(fn)
+		b.WriteString(");\n")
+	}
+	b.WriteString("}")
+
+	for _, s := range r.Sprites {
+		word := funcName(s)
+		b.WriteString("\n\nauto get")
+		b.WriteString(word)
+		b.WriteString("Texture() -> Texture {\n    return ")
+		b.WriteString(word)
+		b.WriteString(";\n}")
+	}
+
+	b.WriteByte('\n')
 
 	return os.WriteFile(f, []byte(b.String()), 0o755)
 }

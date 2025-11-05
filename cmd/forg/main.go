@@ -79,6 +79,14 @@ func initCmd(ctx *cli.Context) error {
 	return nil
 }
 
+func genCmd(ctx *cli.Context) error {
+	initFromFlag(ctx)
+	c, l := getFlags(ctx.Args().Get(0))
+	o, err := compile.NewOpts(workingDirectory, c, l)
+	log.AssertErr(err)
+	return compile.CodegenResources(o)
+}
+
 func initFromFlag(ctx *cli.Context) {
 	log.LogVerbose = ctx.Bool("verbose")
 	workingDirectory = util.Either(ctx.String("path"), workingDirectory)
@@ -171,6 +179,11 @@ func main() {
 				Name:   "init",
 				Usage:  "init new project",
 				Action: initCmd,
+			},
+			{
+				Name:   "generate",
+				Usage:  "generate code",
+				Action: genCmd,
 			},
 		},
 		Flags: []cli.Flag{
